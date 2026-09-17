@@ -105,11 +105,36 @@
       .rating-dot.green { background: limegreen; }
       .rating-dot.yellow { background: gold; }
       .rating-dot.red { background: crimson; }
+
+      /* explanatory boxes - same bordered look as the station boxes, full width */
+      .info-box {
+        border: 2px solid #999;
+        border-radius: 6px;
+        padding: 16px;
+        margin-bottom: 24px;
+        background: none;
+        text-align: left;
+      }
+
+      .info-box p {
+        margin: 4px 0;
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 20px;
+      }
     </style>
 </head>
 <body>
 
 <h1>Bomb Defusal Parkour</h1>
+
+<div class="info-box">
+  <p><strong>About this mockup:</strong> Rough concept for Checkpoint 1, not the final visual design (no styling polish yet).</p>
+  <p>Every <code>data-field</code> attribute on an element maps to a field defined in the ICD (<code>docs/ICD_Bomb_Defusal_Parkour.md</code>) - this is how the mockup ties its UI elements back to the actual data model.</p>
+</div>
 
 <div class="card-row">
 
@@ -144,6 +169,22 @@
     </div>
   </div>
 
+</div>
+
+<div class="info-box">
+  <p><strong>Legend:</strong> two separate fields per station, shown in two separate sections below.</p>
+  <p>
+    <span class="legend-item"><span class="state-dot idle"></span>&nbsp;idle</span>
+    <span class="legend-item"><span class="state-dot active"></span>&nbsp;active</span>
+    <span class="legend-item"><span class="state-dot solved"></span>&nbsp;solved</span>
+    — <em>state</em>: is the station currently being played?
+  </p>
+  <p>
+    <span class="legend-item"><span class="rating-dot green"></span>&nbsp;green</span>
+    <span class="legend-item"><span class="rating-dot yellow"></span>&nbsp;yellow</span>
+    <span class="legend-item"><span class="rating-dot red"></span>&nbsp;red</span>
+    — <em>rating</em>: visitor feedback, independent of state
+  </p>
 </div>
 
 <h2>Station Status (live)</h2>
