@@ -6,7 +6,7 @@ Version: v1 – Draft – 2026-09-17
 Interface between the Coordination Team (broker + dashboard) and each Station, communicating via MQTT.
 
 ## Systems Involved
-- **Station (Zelle)**: builds and operates one puzzle station. Receives its digit from the Coordination Team at game start, and sends status updates (active / solved) back.
+- **Station (Zelle)**: builds and operates one puzzle station. Receives its digit from the Coordination Team at game start, and sends state updates (idle / active / solved) back.
 - **Coordination Team**: operates the central MQTT broker and the dashboard. Sends each station its digit at game start, and receives status updates from all stations to display live progress and the scoreboard.
 
 ## Topics & Protocol
@@ -16,6 +16,8 @@ Protocol: MQTT (Mosquitto broker), JSON payloads, transmitted event-based (not p
 - `parkour/station/{id}/status` → Station sends its current status to the Coordination Team
 
 Note: since two teams can never play in parallel (only stations run in parallel, not teams), no team identifier is included in the payloads — there is only ever one active game run to disambiguate.
+
+Note: upon receiving a new `digit` on `start` (i.e. at the beginning of a new game round), a station MUST reset its own state and publish a `status` update with `state: "idle"` — even if it was `solved` in a previous round. This both resets stale `solved` state from a previous round and confirms to the dashboard that the station is online and ready.
 
 ## Payload Format
 
@@ -33,8 +35,7 @@ Note: since two teams can never play in parallel (only stations run in parallel,
 ```json
 {
   "station_id": 1,
-  "status": "solved",
-  "active": false,
+  "state": "solved",
   "rating": "green",
   "duration_seconds": 300,
   "timestamp_start": "2026-09-17T10:15:00",
@@ -44,16 +45,16 @@ Note: since two teams can never play in parallel (only stations run in parallel,
 | # | Field | Type | Meaning |
 |---|---|---|---|
 | 1 | station_id | int | identifies which station sent the update |
-| 2 | status | string | `"solved"` or `"unsolved"` |
-| 3 | active | boolean | `true` if a player is currently at the station |
-| 4 | rating | string | `"green"`, `"yellow"` or `"red"` — visitor feedback |
-| 5 | duration_seconds | int | seconds taken to solve (`0` if unsolved) |
-| 6 | timestamp_start | string (ISO 8601) | when the player started interacting with the station |
-| 7 | timestamp_end | string (ISO 8601) or `null` | when the station was solved — `null` if not yet solved |
+| 2 | state | enum (string): `"idle"` \| `"active"` \| `"solved"` | `idle` = not yet started, `active` = a player is currently at the station, `solved` = puzzle solved |
+| 3 | rating | enum (string): `"green"` \| `"yellow"` \| `"red"` | visitor feedback |
+| 4 | duration_seconds | int or `null` | seconds taken to solve — `null` if not yet solved (avoids ambiguity with a genuine near-instant solve, and with clock-skew bugs producing a negative number) |
+| 5 | timestamp_start | string (ISO 8601) | when the player started interacting with the station |
+| 6 | timestamp_end | string (ISO 8601) or `null` | when the station was solved — `null` if not yet solved |
 
 ## Dependencies
 - Every station is responsible for using `mqtt_interface.py` (or an equivalent implementing the same contract) instead of writing custom MQTT logic — this is what keeps every station compatible with the broker and dashboard.
 - Stations never communicate with each other directly; all communication goes through the Coordination Team's broker.
 - A station cannot start its puzzle before receiving its `digit` on the `start` topic — it depends on the Coordination Team publishing that message first.
+- Every station is responsible for resetting its own state to `idle` and publishing that reset whenever it receives a new `digit` — otherwise the dashboard could keep showing a stale `solved` status from a previous round.
 - The Coordination Team depends on every station correctly publishing `status` updates (especially `station_id` and `status`) — without them, the dashboard cannot show live progress or assemble the final code.
 - The Coordination Team is responsible for operating the broker; if it is unreachable, no station can receive its digit or report its status.
