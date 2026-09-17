@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bomb Defusal</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #f2f2f2;
+        margin: 0;
+        padding: 24px;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .card-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        flex: 1;
+        min-width: 260px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      }
+
+      label {
+        display: block;
+        margin-top: 8px;
+      }
+
+      input {
+        padding: 6px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      button {
+        margin-top: 12px;
+        padding: 8px 16px;
+      }
+
+      .countdown {
+        font-size: 48px;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .code-entry {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+      }
+
+      .code-entry input {
+        width: 40px;
+        text-align: center;
+      }
+
+      .status-grid {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+      }
+
+      /* box outline only, no fill - the colored dot carries the meaning */
+      .station {
+        padding: 12px;
+        border: 2px solid #999;
+        border-radius: 6px;
+        min-width: 100px;
+        text-align: center;
+        background: none;
+      }
+
+      /* state dot: green = active, red = solved, gray = idle */
+      .state-dot {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        margin-top: 6px;
+        vertical-align: middle;
+      }
+      .state-dot.idle { background: gray; }
+      .state-dot.active { background: limegreen; }
+      .state-dot.solved { background: crimson; }
+
+      /* rating (Ampel-Feedback) - separate field from state, own small dot */
+      .rating-dot {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-left: 8px;
+        vertical-align: middle;
+      }
+      .rating-dot.green { background: limegreen; }
+      .rating-dot.yellow { background: gold; }
+      .rating-dot.red { background: crimson; }
+    </style>
+</head>
+<body>
+
+<h1>Bomb Defusal Parkour</h1>
+
+<div class="card-row">
+
+  <div class="card">
+    <h2>New Game</h2>
+
+    <label for="team-name">Team Name</label>
+    <input id="team-name" type="text" data-field="team_name" placeholder="e.g. Alpha Team">
+
+    <label for="participant-count">Number of Players</label>
+    <input id="participant-count" type="number" data-field="participant_count" value="1" min="1">
+
+    <button id="start-btn" data-action="start_game">Start Game</button>
+  </div>
+
+  <div class="card">
+    <h2>Countdown</h2>
+
+    <div class="countdown" data-field="countdown_remaining">12:00:00</div>
+
+    <p style="text-align:center;">Enter bomb defusal code:</p>
+    <div class="code-entry">
+      <input maxlength="1" data-field="code_attempt[0]" placeholder="A">
+      <input maxlength="1" data-field="code_attempt[1]" placeholder="B">
+      <input maxlength="1" data-field="code_attempt[2]" placeholder="C">
+      <input maxlength="1" data-field="code_attempt[3]" placeholder="D">
+      <input maxlength="1" data-field="code_attempt[4]" placeholder="E">
+      <input maxlength="1" data-field="code_attempt[5]" placeholder="F">
+    </div>
+    <div style="text-align:center;">
+      <button id="confirm-btn" data-action="confirm_code">Confirm</button>
+    </div>
+  </div>
+
+</div>
+
+<h2>Station Status (live)</h2>
+<div class="status-grid">
+  <div class="station" data-field="stations[1].state">
+    Station 1<br>
+    <span class="state-dot idle"></span>
+  </div>
+  <div class="station" data-field="stations[2].state">
+    Station 2<br>
+    <span class="state-dot active"></span>
+  </div>
+  <div class="station" data-field="stations[3].state">
+    Station 3<br>
+    <span class="state-dot solved"></span>
+  </div>
+  <div class="station" data-field="stations[4].state">
+    Station 4<br>
+    <span class="state-dot idle"></span>
+  </div>
+  <div class="station" data-field="stations[5].state">
+    Station 5<br>
+    <span class="state-dot active"></span>
+  </div>
+  <div class="station" data-field="stations[6].state">
+    Station 6<br>
+    <span class="state-dot solved"></span>
+  </div>
+</div>
+
+<h2>Station Rating (live)</h2>
+<div class="status-grid">
+  <div class="station" data-field="stations[1].rating">
+    Station 1<br>
+    <span class="rating-dot green" data-field="stations[1].rating"></span>
+  </div>
+  <div class="station" data-field="stations[2].rating">
+    Station 2<br>
+    <span class="rating-dot green" data-field="stations[2].rating"></span>
+  </div>
+  <div class="station" data-field="stations[3].rating">
+    Station 3<br>
+    <span class="rating-dot yellow" data-field="stations[3].rating"></span>
+  </div>
+  <div class="station" data-field="stations[4].rating">
+    Station 4<br>
+    <span class="rating-dot green" data-field="stations[4].rating"></span>
+  </div>
+  <div class="station" data-field="stations[5].rating">
+    Station 5<br>
+    <span class="rating-dot green" data-field="stations[5].rating"></span>
+  </div>
+  <div class="station" data-field="stations[6].rating">
+    Station 6<br>
+    <span class="rating-dot red" data-field="stations[6].rating"></span>
+  </div>
+</div>
+
+<script>
+  document.getElementById('start-btn').addEventListener('click', () => {
+    const name = document.getElementById('team-name').value;
+    console.log('Game started for:', name);
+  });
+
+  document.getElementById('confirm-btn').addEventListener('click', () => {
+    const inputs = document.querySelectorAll('.code-entry input');
+    const code = Array.from(inputs).map(i => i.value).join('');
+    console.log('Code entered:', code);
+  });
+</script>
+
+</body>
+</html>
