@@ -75,9 +75,13 @@
         padding: 12px;
         border: 2px solid #999;
         border-radius: 6px;
-        min-width: 100px;
+        min-width: 130px;
         text-align: center;
         background: none;
+      }
+
+      .station h3 {
+        margin: 0 0 8px 0;
       }
 
       /* state dot: green = active, red = solved, gray = idle */
@@ -86,7 +90,6 @@
         width: 14px;
         height: 14px;
         border-radius: 50%;
-        margin-top: 6px;
         vertical-align: middle;
       }
       .state-dot.idle { background: gray; }
@@ -99,12 +102,34 @@
         width: 12px;
         height: 12px;
         border-radius: 50%;
-        margin-left: 8px;
         vertical-align: middle;
       }
       .rating-dot.green { background: limegreen; }
       .rating-dot.yellow { background: gold; }
       .rating-dot.red { background: crimson; }
+
+      .field-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 6px;
+        margin-top: 6px;
+        font-size: 13px;
+      }
+
+      .field-label {
+        color: #777;
+      }
+
+      .field-value {
+        font-weight: bold;
+      }
+
+      .duration {
+        font-size: 13px;
+        color: #555;
+        margin-top: 6px;
+      }
 
       /* explanatory boxes - same bordered look as the station boxes, full width */
       .info-box {
@@ -133,7 +158,7 @@
 
 <div class="info-box">
   <p><strong>About this mockup:</strong> Rough concept for Checkpoint 1, not the final visual design (no styling polish yet).</p>
-  <p>Every <code>data-field</code> attribute on an element maps to a field defined in the ICD (<code>docs/ICD_Bomb_Defusal_Parkour.md</code>) - this is how the mockup ties its UI elements back to the actual data model.</p>
+  <p>Every <code>data-field</code> attribute on an element maps to a field defined in the ICD (<code>docs/ICD_Bomb_Defusal_Parkour.md</code>) - this is how the mockup ties its UI elements back to the actual data model. Each station card carries <code>data-station-id</code> (matching the ICD's <code>station_id</code>) - in real code, an incoming MQTT message's <code>station_id</code> is the key used to find the right card, then <code>state</code>/<code>rating</code> update the fields inside it.</p>
 </div>
 
 <div class="card-row">
@@ -171,8 +196,95 @@
 
 </div>
 
+<h2>Stations (live)</h2>
+<div class="status-grid">
+  <div class="station" data-station-id="1">
+    <h3>Station 1</h3>
+    <div class="field-row">
+      <span class="field-label">Status:</span>
+      <span class="state-dot idle" data-field="state"></span>
+      <span class="field-value">Idle</span>
+    </div>
+  </div>
+  <div class="station" data-station-id="2"
+       data-timestamp-start="2026-09-18T10:00:00">
+    <h3>Station 2</h3>
+    <div class="field-row">
+      <span class="field-label">Status:</span>
+      <span class="state-dot active" data-field="state"></span>
+      <span class="field-value">Active</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Rating:</span>
+      <span class="rating-dot green" data-field="rating"></span>
+      <span class="field-value">Green</span>
+    </div>
+  </div>
+  <div class="station" data-station-id="3"
+       data-timestamp-start="2026-09-18T10:00:00" data-timestamp-end="2026-09-18T10:05:13">
+    <h3>Station 3</h3>
+    <div class="field-row">
+      <span class="field-label">Status:</span>
+      <span class="state-dot solved" data-field="state"></span>
+      <span class="field-value">Solved</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Rating:</span>
+      <span class="rating-dot yellow" data-field="rating"></span>
+      <span class="field-value">Yellow</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Duration:</span>
+      <span class="field-value duration" data-field="duration"></span>
+    </div>
+  </div>
+  <div class="station" data-station-id="4">
+    <h3>Station 4</h3>
+    <div class="field-row">
+      <span class="field-label">Status:</span>
+      <span class="state-dot idle" data-field="state"></span>
+      <span class="field-value">Idle</span>
+    </div>
+  </div>
+  <div class="station" data-station-id="5"
+       data-timestamp-start="2026-09-18T10:02:00">
+    <h3>Station 5</h3>
+    <div class="field-row">
+      <span class="field-label">Status:</span>
+      <span class="state-dot active" data-field="state"></span>
+      <span class="field-value">Active</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Rating:</span>
+      <span class="rating-dot green" data-field="rating"></span>
+      <span class="field-value">Green</span>
+    </div>
+  </div>
+  <div class="station" data-station-id="6"
+       data-timestamp-start="2026-09-18T10:00:00" data-timestamp-end="2026-09-18T10:11:47">
+    <h3>Station 6</h3>
+    <div class="field-row">
+      <span class="field-label">Status:</span>
+      <span class="state-dot solved" data-field="state"></span>
+      <span class="field-value">Solved</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Rating:</span>
+      <span class="rating-dot red" data-field="rating"></span>
+      <span class="field-value">Red</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Duration:</span>
+      <span class="field-value duration" data-field="duration"></span>
+    </div>
+  </div>
+</div>
+
+<br>
+<br>
+
 <div class="info-box">
-  <p><strong>Legend:</strong> two separate fields per station, shown in two separate sections below.</p>
+  <p><strong>Legend:</strong> one card per station, showing all of that station's fields together.</p>
   <p>
     <span class="legend-item"><span class="state-dot idle"></span>&nbsp;idle</span>
     <span class="legend-item"><span class="state-dot active"></span>&nbsp;active</span>
@@ -183,64 +295,9 @@
     <span class="legend-item"><span class="rating-dot green"></span>&nbsp;green</span>
     <span class="legend-item"><span class="rating-dot yellow"></span>&nbsp;yellow</span>
     <span class="legend-item"><span class="rating-dot red"></span>&nbsp;red</span>
-    — <em>rating</em>: visitor feedback, independent of state
+    — <em>rating</em>: visitor feedback, independent of state, only shown once a station has been played
   </p>
-</div>
-
-<h2>Station Status (live)</h2>
-<div class="status-grid">
-  <div class="station" data-field="stations[1].state">
-    Station 1<br>
-    <span class="state-dot idle"></span>
-  </div>
-  <div class="station" data-field="stations[2].state">
-    Station 2<br>
-    <span class="state-dot active"></span>
-  </div>
-  <div class="station" data-field="stations[3].state">
-    Station 3<br>
-    <span class="state-dot solved"></span>
-  </div>
-  <div class="station" data-field="stations[4].state">
-    Station 4<br>
-    <span class="state-dot idle"></span>
-  </div>
-  <div class="station" data-field="stations[5].state">
-    Station 5<br>
-    <span class="state-dot active"></span>
-  </div>
-  <div class="station" data-field="stations[6].state">
-    Station 6<br>
-    <span class="state-dot solved"></span>
-  </div>
-</div>
-
-<h2>Station Rating (live)</h2>
-<div class="status-grid">
-  <div class="station" data-field="stations[1].rating">
-    Station 1<br>
-    <span class="rating-dot green" data-field="stations[1].rating"></span>
-  </div>
-  <div class="station" data-field="stations[2].rating">
-    Station 2<br>
-    <span class="rating-dot green" data-field="stations[2].rating"></span>
-  </div>
-  <div class="station" data-field="stations[3].rating">
-    Station 3<br>
-    <span class="rating-dot yellow" data-field="stations[3].rating"></span>
-  </div>
-  <div class="station" data-field="stations[4].rating">
-    Station 4<br>
-    <span class="rating-dot green" data-field="stations[4].rating"></span>
-  </div>
-  <div class="station" data-field="stations[5].rating">
-    Station 5<br>
-    <span class="rating-dot green" data-field="stations[5].rating"></span>
-  </div>
-  <div class="station" data-field="stations[6].rating">
-    Station 6<br>
-    <span class="rating-dot red" data-field="stations[6].rating"></span>
-  </div>
+  <p><em>duration</em> is not its own ICD field - it's computed here as <code>timestamp_end - timestamp_start</code> (see script at the bottom).</p>
 </div>
 
 <script>
@@ -253,6 +310,20 @@
     const inputs = document.querySelectorAll('.code-entry input');
     const code = Array.from(inputs).map(i => i.value).join('');
     console.log('Code entered:', code);
+  });
+
+  // duration is not sent over MQTT - it's derived from timestamp_start/timestamp_end
+  // (both recorded by the same station, so simple subtraction is enough)
+  document.querySelectorAll('.station').forEach(card => {
+    const startStr = card.dataset.timestampStart;
+    const endStr = card.dataset.timestampEnd;
+    const durationEl = card.querySelector('[data-field="duration"]');
+    if (!durationEl || !startStr || !endStr) return;
+
+    const seconds = Math.round((new Date(endStr) - new Date(startStr)) / 1000);
+    const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const ss = String(seconds % 60).padStart(2, '0');
+    durationEl.textContent = `${mm}:${ss} min`;
   });
 </script>
 
