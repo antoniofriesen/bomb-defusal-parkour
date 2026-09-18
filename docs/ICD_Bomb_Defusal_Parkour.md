@@ -52,9 +52,10 @@ Note: upon receiving a new `digit` on `start` (i.e. at the beginning of a new ga
 | 6 | timestamp_end | string (ISO 8601) or `null` | when the station was solved — `null` if not yet solved |
 
 ## Dependencies
-- Every station is responsible for using `mqtt_interface.py` (or an equivalent implementing the same contract) instead of writing custom MQTT logic — this is what keeps every station compatible with the broker and dashboard.
+- Every station implements its own MQTT connection (paho-mqtt: connect, subscribe, publish) - this is intentionally not shared, so every station learns the MQTT mechanics themselves.
+- Every station is responsible for using `icd_interface.py` (`ICDInterface.start_payload()` / `ICDInterface.status_payload()`) to build its payloads, instead of hand-building the JSON - this is what keeps every station's payloads compatible with the broker and dashboard, regardless of how each station's own MQTT code is written.
 - Stations never communicate with each other directly; all communication goes through the Coordination Team's broker.
 - A station cannot start its puzzle before receiving its `digit` on the `start` topic — it depends on the Coordination Team publishing that message first.
-- Every station is responsible for resetting its own state to `idle` and publishing that reset whenever it receives a new `digit` — otherwise the dashboard could keep showing a stale `solved` status from a previous round.
-- The Coordination Team depends on every station correctly publishing `status` updates (especially `station_id` and `status`) — without them, the dashboard cannot show live progress or assemble the final code.
+- Every station is responsible for resetting its own state to `idle` and publishing that reset whenever it receives a new `digit` — otherwise the dashboard could keep showing a stale `solved` state from a previous round.
+- The Coordination Team depends on every station correctly publishing `status` updates (especially `station_id` and `state`) — without them, the dashboard cannot show live progress or assemble the final code.
 - The Coordination Team is responsible for operating the broker; if it is unreachable, no station can receive its digit or report its status.
