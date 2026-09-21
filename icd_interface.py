@@ -3,6 +3,8 @@ icd_interface.py
 =================
 Bomb Defusal Parkour - LF07 ITECH BGH
 
+Version: v1 – Draft – 2026-09-21 (matches ICD v1)
+
 WHAT THIS IS NOT: this does not connect to the MQTT broker and does not
 publish or subscribe to anything. Every station implements its own MQTT
 connection (paho-mqtt: connect, subscribe, publish) - that is intentional,
