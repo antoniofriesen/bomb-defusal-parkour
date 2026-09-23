@@ -22,6 +22,7 @@ def test_http_repository_parses_response_into_games(mock_get):
     mock_response = Mock()
     mock_response.json.return_value = [
         {
+            "game_id": 1,
             "team_name": "Alpha Team",
             "outcome": "defused",
             "started_at": "2026-09-21T10:00:00",
@@ -34,6 +35,7 @@ def test_http_repository_parses_response_into_games(mock_get):
 
     assert games == [
         Game(
+            game_id=1,
             team_name="Alpha Team",
             outcome="defused",
             started_at="2026-09-21T10:00:00",

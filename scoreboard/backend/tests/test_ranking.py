@@ -1,11 +1,17 @@
 """Tests for ranking.py - expected values come from the team rules, not from the code."""
 
+import itertools
+
 from models import Game
 from ranking import build_ranking
 
+_game_id_counter = itertools.count(1)
 
-def game(team_name="A", outcome="defused", started_at="2026-01-01T10:00:00", ended_at="2026-01-01T10:05:00"):
-    return Game(team_name=team_name, outcome=outcome, started_at=started_at, ended_at=ended_at)
+
+def game(team_name="A", outcome="defused", started_at="2026-01-01T10:00:00", ended_at="2026-01-01T10:05:00", game_id=None):
+    if game_id is None:
+        game_id = next(_game_id_counter)
+    return Game(game_id=game_id, team_name=team_name, outcome=outcome, started_at=started_at, ended_at=ended_at)
 
 
 def test_only_defused_games_get_a_rank():
