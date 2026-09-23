@@ -40,6 +40,18 @@ def test_fastest_team_is_rank_1():
     assert ranking[1].rank == 2
 
 
+def test_gap_seconds_is_the_difference_to_the_fastest_team():
+    games = [
+        game(team_name="Fast", started_at="2026-01-01T10:00:00", ended_at="2026-01-01T10:03:00"),
+        game(team_name="Slow", started_at="2026-01-01T10:00:00", ended_at="2026-01-01T10:10:00"),
+    ]
+
+    ranking = build_ranking(games)
+
+    assert ranking[0].gap_seconds == 0  # the fastest team has no gap to itself
+    assert ranking[1].gap_seconds == 420  # 7 min behind
+
+
 def test_duration_seconds_is_computed_correctly():
     ranking = build_ranking([game(ended_at="2026-01-01T10:05:13")])
 

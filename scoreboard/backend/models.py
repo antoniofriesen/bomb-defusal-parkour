@@ -37,6 +37,7 @@ class RankingEntry(BaseModel):
     rank: int
     team_name: str
     duration_seconds: int
+    gap_seconds: int
     started_at: str
     ended_at: str | None
 
@@ -62,6 +63,7 @@ class StationRankingEntry(BaseModel):
     rank: int
     team_name: str
     duration_seconds: int
+    gap_seconds: int
 
 
 class StationRanking(BaseModel):
@@ -77,6 +79,7 @@ class GameStationResult(BaseModel):
     station_id: int
     rank: int
     duration_seconds: int
+    gap_seconds: int
 
 
 class GameDetail(BaseModel):

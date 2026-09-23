@@ -42,6 +42,7 @@ Response `200`:
       "rank": 1,
       "team_name": "Alpha Team",
       "duration_seconds": 1325,
+      "gap_seconds": 0,
       "started_at": "2026-09-22T09:00:00",
       "ended_at": "2026-09-22T09:22:05"
     }
@@ -59,7 +60,7 @@ Response `200`:
     {
       "station_id": 1,
       "ranking": [
-        { "game_id": 3, "rank": 1, "team_name": "Alpha Team", "duration_seconds": 190 }
+        { "game_id": 3, "rank": 1, "team_name": "Alpha Team", "duration_seconds": 190, "gap_seconds": 0 }
       ]
     }
   ]
@@ -77,7 +78,7 @@ Response `200`:
   "duration_seconds": 1325,
   "overall_rank": 1,
   "stations": [
-    { "station_id": 1, "rank": 2, "duration_seconds": 190 }
+    { "station_id": 1, "rank": 2, "duration_seconds": 190, "gap_seconds": 30 }
   ]
 }
 ```

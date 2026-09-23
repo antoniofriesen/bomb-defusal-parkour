@@ -37,6 +37,7 @@ def build_ranking(games: list[Game]) -> list[RankingEntry]:
         scored.append((game, _duration_seconds(game.started_at, game.ended_at)))
 
     scored.sort(key=lambda pair: pair[1])
+    best_duration = scored[0][1] if scored else 0
 
     return [
         RankingEntry(
@@ -44,6 +45,7 @@ def build_ranking(games: list[Game]) -> list[RankingEntry]:
             rank=i + 1,
             team_name=game.team_name,
             duration_seconds=duration,
+            gap_seconds=duration - best_duration,
             started_at=game.started_at,
             ended_at=game.ended_at,
         )
