@@ -23,6 +23,7 @@ ENV/
 obj/
 bin/
 *.http
+*.db-*
 
 
 # Node / Dashboard frontend
