@@ -28,24 +28,24 @@ Request:
 Response:
 ```json
 {
-  "code": "ABCDEF"
+  "code": "123456"
 }
 ```
 | # | Field | Type | Meaning |
 |---|---|---|---|
-| 1 | code | string | The 6-digit-code needed to win the game |
+| 1 | code | string | The 6-digit-code needed to win the game; It is a string as it can have leading 0s! |
 
 - POST `/internal/dashboardbackend/stop` → Stops the game if the provided code is correct, otherwise 400 gets returned
 Request:
 ```json
 {
-  "code": "ABCDEF",
+  "code": "123456",
   "force": false
 }
 ```
 | # | Field | Type | Meaning |
 |---|---|---|---|
-| 1 | code | string | The 6-digit-code needed to win the game; Ends the game if it is correct |
+| 1 | code | string | The 6-digit-code needed to win the game; Ends the game if it is correct; It is a string as it can have leading 0s! |
 | 2 | force | bool | If true, ends the game and assumes the group has lost the game |
 
 Response:
