@@ -1,43 +1,52 @@
 """
 ranking.py
 ==========
-Baut die Rangliste aus den Rohdaten von games_source.get_games().
+Builds the ranking from the raw list of all games.
 
-Regeln (abgestimmt im Team):
-- Nur "defused"-Spiele bekommen einen Platz (running/exploded fliegen raus)
-- Sortiert nach Gesamtzeit (ended_at - started_at), schnellste zuerst
-- Jedes Spiel zaehlt einzeln - ein Team kann mehrfach in der Liste stehen
+Rules (agreed with the team):
+- Only "defused" games get a rank (running/exploded are dropped)
+- Sorted by total time (ended_at - started_at), fastest first
+- Every game counts on its own - a team can appear multiple times
 """
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 
+from models import Game, RankingEntry
 
-def build_ranking(games: list[dict]) -> list[dict]:
-    """Nimmt die Rohliste aller Spiele, gibt die sortierte Rangliste zurueck.
+logger = logging.getLogger(__name__)
 
-    Jeder Eintrag im Ergebnis: {"rank", "team_name", "duration_seconds",
-    "started_at", "ended_at"}.
-    """
-    defused = [g for g in games if g["outcome"] == "defused"]
 
-    with_duration = [
-        {**g, "duration_seconds": _duration_seconds(g["started_at"], g["ended_at"])}
-        for g in defused
-    ]
+def build_ranking(games: list[Game]) -> list[RankingEntry]:
+    scored: list[tuple[Game, int]] = []
 
-    with_duration.sort(key=lambda g: g["duration_seconds"])
+    for game in games:
+        if game.outcome != "defused":
+            continue
+        if game.ended_at is None:
+            # Shouldn't happen per the contract, but skip and log instead
+            # of crashing the whole scoreboard over one bad entry from
+            # the dashboard backend.
+            logger.warning(
+                "Game by %r has outcome=defused but no ended_at, skipping",
+                game.team_name,
+            )
+            continue
+        scored.append((game, _duration_seconds(game.started_at, game.ended_at)))
+
+    scored.sort(key=lambda pair: pair[1])
 
     return [
-        {
-            "rank": i + 1,
-            "team_name": g["team_name"],
-            "duration_seconds": g["duration_seconds"],
-            "started_at": g["started_at"],
-            "ended_at": g["ended_at"],
-        }
-        for i, g in enumerate(with_duration)
+        RankingEntry(
+            rank=i + 1,
+            team_name=game.team_name,
+            duration_seconds=duration,
+            started_at=game.started_at,
+            ended_at=game.ended_at,
+        )
+        for i, (game, duration) in enumerate(scored)
     ]
 
 

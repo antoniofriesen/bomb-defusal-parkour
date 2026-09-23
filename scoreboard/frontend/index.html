@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Scoreboard - Bomb Defusal Parkour</title>
@@ -75,20 +75,20 @@
 <body>
 
 <h1>🏆 Scoreboard</h1>
-<div class="status" id="status">Lade...</div>
+<div class="status" id="status">Loading...</div>
 
 <table id="ranking-table" hidden>
   <thead>
     <tr>
-      <th class="rank">Platz</th>
+      <th class="rank">Rank</th>
       <th>Team</th>
-      <th class="duration">Zeit</th>
+      <th class="duration">Time</th>
     </tr>
   </thead>
   <tbody id="ranking-body"></tbody>
 </table>
 
-<div class="empty" id="empty-message" hidden>Noch kein Team hat die Bombe entschärft.</div>
+<div class="empty" id="empty-message" hidden>No team has defused the bomb yet.</div>
 
 <script>
   const POLL_INTERVAL_MS = 3000;
@@ -108,7 +108,7 @@
     try {
       const response = await fetch('/scoreboard');
       if (!response.ok) {
-        throw new Error(`Server antwortete mit ${response.status}`);
+        throw new Error(`Server responded with ${response.status}`);
       }
       const data = await response.json();
 
@@ -133,7 +133,7 @@
       `).join('');
 
     } catch (err) {
-      statusEl.textContent = 'Keine Verbindung zum Server - versuche erneut...';
+      statusEl.textContent = 'No connection to the server - retrying...';
       statusEl.classList.add('error');
       console.error(err);
     }

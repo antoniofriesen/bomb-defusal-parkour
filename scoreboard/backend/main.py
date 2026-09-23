@@ -1,30 +1,40 @@
 """
 main.py
 =======
-FastAPI-App fuer das Scoreboard-Backend.
+FastAPI app for the scoreboard backend.
 
-Start (im Ordner scoreboard/backend/):
+Start (inside scoreboard/backend/):
     uvicorn main:app --reload --port 8001
 
-Danach im Browser: http://localhost:8001/  (die Scoreboard-Seite)
-API direkt:         http://localhost:8001/scoreboard
+Then in the browser: http://localhost:8001/  (the scoreboard page)
+API directly:         http://localhost:8001/scoreboard
+
+Which data source is used is decided by get_repository() below,
+controlled via config.py (environment variable SCOREBOARD_USE_FAKE_DATA).
 """
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
-from games_source import get_games
+import config
+from models import RankingEntry
 from ranking import build_ranking
+from repositories.base import GamesRepository
+from repositories.fake_repository import FakeGamesRepository
+from repositories.http_repository import HttpGamesRepository
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="Bomb Defusal Parkour - Scoreboard")
 
-# Erlaubt dem Frontend (auch von einem anderen Port/Rechner) den Zugriff.
-# Fuer die Messe koennt ihr das auf die echte Adresse des Dashboard-Pis einschraenken.
+# For the event, restrict this to the real address of the dashboard Pi.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,12 +42,24 @@ app.add_middleware(
 )
 
 
-@app.get("/scoreboard")
-def scoreboard() -> dict:
-    games = get_games()
-    return {"ranking": build_ranking(games)}
+def get_repository() -> GamesRepository:
+    """The single place that decides which data source is used.
+    Tests override this via app.dependency_overrides."""
+    if config.USE_FAKE_DATA:
+        return FakeGamesRepository()
+    return HttpGamesRepository(base_url=config.DASHBOARD_BACKEND_URL)
 
 
-# Liefert scoreboard/frontend/ als Webseite aus (kein zweiter Server noetig)
+class ScoreboardResponse(BaseModel):
+    ranking: list[RankingEntry]
+
+
+@app.get("/scoreboard", response_model=ScoreboardResponse)
+def scoreboard(repository: GamesRepository = Depends(get_repository)) -> ScoreboardResponse:
+    games = repository.get_games()
+    return ScoreboardResponse(ranking=build_ranking(games))
+
+
+# Serves scoreboard/frontend/ as a website (no second server needed)
 frontend_dir = Path(__file__).parent.parent / "frontend"
 app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
