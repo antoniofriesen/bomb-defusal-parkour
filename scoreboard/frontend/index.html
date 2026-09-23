@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Scoreboard - Bomb Defusal Parkour</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #0b1012;
+      color: #eee;
+      margin: 0;
+      padding: 32px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 42px;
+      margin-bottom: 8px;
+    }
+
+    .status {
+      text-align: center;
+      font-size: 16px;
+      color: #999;
+      margin-bottom: 24px;
+    }
+
+    .status.error {
+      color: #ff6b6b;
+    }
+
+    table {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      font-size: 28px;
+    }
+
+    th, td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid #333;
+    }
+
+    th {
+      color: #999;
+      font-size: 18px;
+      text-transform: uppercase;
+    }
+
+    tr:first-child td {
+      color: gold;
+      font-weight: bold;
+      font-size: 34px;
+    }
+
+    .rank {
+      width: 80px;
+    }
+
+    .duration {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .empty {
+      text-align: center;
+      font-size: 22px;
+      color: #999;
+      margin-top: 48px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🏆 Scoreboard</h1>
+<div class="status" id="status">Lade...</div>
+
+<table id="ranking-table" hidden>
+  <thead>
+    <tr>
+      <th class="rank">Platz</th>
+      <th>Team</th>
+      <th class="duration">Zeit</th>
+    </tr>
+  </thead>
+  <tbody id="ranking-body"></tbody>
+</table>
+
+<div class="empty" id="empty-message" hidden>Noch kein Team hat die Bombe entschärft.</div>
+
+<script>
+  const POLL_INTERVAL_MS = 3000;
+
+  function formatDuration(totalSeconds) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  async function loadScoreboard() {
+    const statusEl = document.getElementById('status');
+    const tableEl = document.getElementById('ranking-table');
+    const bodyEl = document.getElementById('ranking-body');
+    const emptyEl = document.getElementById('empty-message');
+
+    try {
+      const response = await fetch('/scoreboard');
+      if (!response.ok) {
+        throw new Error(`Server antwortete mit ${response.status}`);
+      }
+      const data = await response.json();
+
+      statusEl.textContent = 'Live';
+      statusEl.classList.remove('error');
+
+      if (data.ranking.length === 0) {
+        tableEl.hidden = true;
+        emptyEl.hidden = false;
+        return;
+      }
+
+      emptyEl.hidden = true;
+      tableEl.hidden = false;
+
+      bodyEl.innerHTML = data.ranking.map(entry => `
+        <tr>
+          <td class="rank">${entry.rank}</td>
+          <td>${entry.team_name}</td>
+          <td class="duration">${formatDuration(entry.duration_seconds)}</td>
+        </tr>
+      `).join('');
+
+    } catch (err) {
+      statusEl.textContent = 'Keine Verbindung zum Server - versuche erneut...';
+      statusEl.classList.add('error');
+      console.error(err);
+    }
+  }
+
+  loadScoreboard();
+  setInterval(loadScoreboard, POLL_INTERVAL_MS);
+</script>
+
+</body>
+</html>
