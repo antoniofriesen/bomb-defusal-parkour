@@ -40,7 +40,7 @@ def build_station_comparison(events: list[StationEvent]) -> list[StationRanking]
     for station_id in sorted(by_station):
         scored = sorted(by_station[station_id], key=lambda pair: pair[1])
         ranking = [
-            StationRankingEntry(rank=i + 1, team_name=event.team_name, duration_seconds=duration)
+            StationRankingEntry(game_id=event.game_id, rank=i + 1, team_name=event.team_name, duration_seconds=duration)
             for i, (event, duration) in enumerate(scored)
         ]
         stations.append(StationRanking(station_id=station_id, ranking=ranking))

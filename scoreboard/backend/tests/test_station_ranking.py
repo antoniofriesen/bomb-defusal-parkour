@@ -1,11 +1,17 @@
 """Tests for station_ranking.py - one ranking per station."""
 
+import itertools
+
 from models import StationEvent
 from station_ranking import build_station_comparison
 
+_game_id_counter = itertools.count(1)
 
-def event(team_name="A", station_id=1, state="solved", timestamp_start="2026-01-01T10:00:00", timestamp_end="2026-01-01T10:05:00"):
-    return StationEvent(team_name=team_name, station_id=station_id, state=state, timestamp_start=timestamp_start, timestamp_end=timestamp_end)
+
+def event(team_name="A", station_id=1, state="solved", timestamp_start="2026-01-01T10:00:00", timestamp_end="2026-01-01T10:05:00", game_id=None):
+    if game_id is None:
+        game_id = next(_game_id_counter)
+    return StationEvent(game_id=game_id, team_name=team_name, station_id=station_id, state=state, timestamp_start=timestamp_start, timestamp_end=timestamp_end)
 
 
 def test_only_solved_events_count():

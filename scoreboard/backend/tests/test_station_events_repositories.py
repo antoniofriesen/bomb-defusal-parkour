@@ -24,6 +24,7 @@ def test_http_repository_parses_response_into_station_events(mock_get):
     mock_response = Mock()
     mock_response.json.return_value = [
         {
+            "game_id": 1,
             "team_name": "Alpha Team",
             "station_id": 1,
             "state": "solved",
@@ -37,6 +38,7 @@ def test_http_repository_parses_response_into_station_events(mock_get):
 
     assert events == [
         StationEvent(
+            game_id=1,
             team_name="Alpha Team",
             station_id=1,
             state="solved",

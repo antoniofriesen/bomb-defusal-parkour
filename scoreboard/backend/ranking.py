@@ -40,6 +40,7 @@ def build_ranking(games: list[Game]) -> list[RankingEntry]:
 
     return [
         RankingEntry(
+            game_id=game.game_id,
             rank=i + 1,
             team_name=game.team_name,
             duration_seconds=duration,
