@@ -26,6 +26,7 @@ def test_build_game_detail_combines_overall_and_station_results():
     assert detail.team_name == "Alpha"
     assert detail.duration_seconds == 300
     assert detail.overall_rank == 1
+    assert detail.gap_seconds == 0
     assert [(s.station_id, s.rank, s.duration_seconds, s.gap_seconds) for s in detail.stations] == [
         (1, 1, 120, 0),
         (2, 2, 180, 90),

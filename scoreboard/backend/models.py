@@ -91,4 +91,5 @@ class GameDetail(BaseModel):
     team_name: str
     duration_seconds: int
     overall_rank: int
+    gap_seconds: int
     stations: list[GameStationResult]

@@ -15,6 +15,10 @@ function formatDuration(totalSeconds) {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+function formatGap(gapSeconds) {
+  return gapSeconds === 0 ? 'Leader' : `+${formatDuration(gapSeconds)}`;
+}
+
 function formatTimestampLabel(isoString) {
   // Short label for the dropdown, e.g. "22.09. 09:00"
   const d = new Date(isoString);
@@ -69,6 +73,7 @@ async function loadScoreboard() {
         <td class="rank">${entry.rank}</td>
         <td>${entry.team_name}</td>
         <td class="duration">${formatDuration(entry.duration_seconds)}</td>
+        <td class="duration gap">${formatGap(entry.gap_seconds)}</td>
       </tr>
     `).join('');
 
@@ -96,7 +101,10 @@ async function loadStationComparison() {
           ${station.ranking.map(entry => `
             <li>
               <span>${entry.rank}. ${entry.team_name}</span>
-              <span class="duration">${formatDuration(entry.duration_seconds)}</span>
+              <span class="duration">
+                ${formatDuration(entry.duration_seconds)}
+                <span class="gap">${formatGap(entry.gap_seconds)}</span>
+              </span>
             </li>
           `).join('')}
         </ol>
@@ -150,6 +158,7 @@ async function loadGameDetail(gameId) {
         <div class="overview-stats">
           <div>Total time<strong>${formatDuration(detail.duration_seconds)}</strong></div>
           <div>Overall rank<strong>${detail.overall_rank}</strong></div>
+          <div>To leader<strong>${formatGap(detail.gap_seconds)}</strong></div>
         </div>
       </div>
       <div class="station-grid">
@@ -159,7 +168,10 @@ async function loadGameDetail(gameId) {
             <ol>
               <li>
                 <span>Rank ${s.rank}</span>
-                <span class="duration">${formatDuration(s.duration_seconds)}</span>
+                <span class="duration">
+                  ${formatDuration(s.duration_seconds)}
+                  <span class="gap">${formatGap(s.gap_seconds)}</span>
+                </span>
               </li>
             </ol>
           </div>

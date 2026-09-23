@@ -118,6 +118,7 @@ def test_game_detail_endpoint_combines_overall_and_per_station_results():
         "team_name": "Alpha",
         "duration_seconds": 300,
         "overall_rank": 1,
+        "gap_seconds": 0,
         "stations": [
             {"station_id": 1, "rank": 1, "duration_seconds": 120, "gap_seconds": 0},
         ],
