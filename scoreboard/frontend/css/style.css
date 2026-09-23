@@ -1,0 +1,424 @@
+/*
+  style.css
+  =========
+  Visual style loosely inspired by the teacher-approved scoring concept
+  mockup (docs/bomb_defusal_scoring_konzept.html) - color palette,
+  monospace numbers, one outer bordered board with a two-column layout -
+  reimplemented here from scratch for our own markup, not copied from it.
+
+  Unlike the mockup, .board has no fixed aspect-ratio: it was built as a
+  single static screenshot ("16:9 / visual concept"), ours has to hold
+  a real, variable amount of live data without clipping.
+*/
+
+:root {
+  --bg: #0b1012;
+  --panel: #131b1e;
+  --edge: #334146;
+  --muted: #b1bcb8;
+  --text: #eef2f0;
+  --accent: #efd269;
+  --success: #6fbf73;
+  --success-bg: #1c2a1e;
+  --danger: #ff6b6b;
+  --font-mono: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", monospace;
+  --font-sans: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 24px;
+}
+
+/* The one outer board that everything lives in */
+
+.board {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  border-top: 6px solid;
+  border-image: repeating-linear-gradient(
+    45deg,
+    var(--accent) 0 14px,
+    var(--panel) 14px 28px
+  ) 6;
+  padding: 24px 28px;
+}
+
+.board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--edge);
+}
+
+.brand-title {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.brand-sub {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.status {
+  text-align: center;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.status.error {
+  color: var(--danger);
+}
+
+/* Tabs (in the header) */
+
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-button {
+  background: var(--bg);
+  color: var(--muted);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tab-button[aria-selected="true"] {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+/* Two-column layout, used by both tabs */
+
+.board-columns {
+  display: grid;
+  grid-template-columns: minmax(220px, 32%) minmax(0, 1fr);
+  gap: 24px;
+}
+
+.board-columns[hidden] {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .board-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-title {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 16px;
+}
+
+.panel-title-row .panel-title {
+  margin-bottom: 0;
+}
+
+.panel-note {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+/* Card - used for the ranking table and the team overview */
+
+.card {
+  background: var(--bg);
+  border: 1px solid var(--edge);
+  border-top: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+
+.card .panel-title {
+  margin-bottom: 12px;
+}
+
+/* Ranking table */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+
+th, td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--edge);
+}
+
+th {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+tr:first-child td {
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.rank {
+  width: 50px;
+}
+
+.duration,
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.duration {
+  text-align: right;
+}
+
+.gap {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+tr:first-child .gap {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.empty {
+  text-align: center;
+  font-size: 15px;
+  color: var(--muted);
+  padding: 16px 0;
+}
+
+/* Station cards */
+
+.station-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 700px) {
+  .station-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.station-card {
+  background: var(--bg);
+  border: 1px solid var(--edge);
+  border-top: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.station-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.station-card ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.station-card li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+  font-size: 14px;
+}
+
+.station-card li:first-child {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.station-card .duration {
+  text-align: right;
+}
+
+.station-card .gap {
+  display: block;
+  margin-top: 2px;
+}
+
+/* Team detail tab */
+
+.game-select-row {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.game-select-row label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+#game-select {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  padding: 8px 12px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.team-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.team-name {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.status-badge {
+  flex: none;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--success);
+  background: var(--success-bg);
+  border: 1px solid var(--success);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+
+.overview-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.overview-stats strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 32px;
+  color: var(--text);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.overview-stats small {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--edge);
+  border-bottom: 1px solid var(--edge);
+  padding: 12px 0;
+}
+
+.small-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.stats-row .stat-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--text);
+}
+
+.stats-row .stat-value .stat-total {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.game-detail-placeholder {
+  text-align: center;
+  font-size: 15px;
+  color: var(--muted);
+  padding: 24px 0;
+}
+
+/* Footer */
+
+.board-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid var(--edge);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
