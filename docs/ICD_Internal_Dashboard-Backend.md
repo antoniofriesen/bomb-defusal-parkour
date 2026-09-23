@@ -12,7 +12,7 @@ Interface between the Dashboard-Frontend and the Dashboard-Backend, communicatin
 ## Protocol & Endpoints
 Protocol: HTTP, JSON payloads, Request-Response-Pattern.
 
-- POST `/internal/dashboardbackend/start` → Registers a new group in the database and generates the code to end the game
+- POST `/dashboard/backend/start` → Registers a new group in the database and generates the code to end the game
 Request:
 ```json
 {
@@ -35,7 +35,7 @@ Response:
 |---|---|---|---|
 | 1 | code | string | The 6-digit-code needed to win the game; It is a string as it can have leading 0s! |
 
-- POST `/internal/dashboardbackend/stop` → Stops the game if the provided code is correct, otherwise 400 gets returned
+- POST `/dashboard/backend/stop` → Stops the game if the provided code is correct, otherwise 400 gets returned
 Request:
 ```json
 {
@@ -54,7 +54,7 @@ Response:
 400: Only if the provided code is wrong
 ```
 
-- GET `/internal/dashboardbackend/status` → Returns the last known state of the individual stations
+- GET `/dashboard/backend/status` → Returns the last known state of the individual stations
 Request:
 ```
 [EMPTY]
