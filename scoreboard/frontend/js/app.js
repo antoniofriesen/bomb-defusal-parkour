@@ -8,11 +8,16 @@
 
 const POLL_INTERVAL_MS = 3000;
 let selectedGameId = null;
+let totalRankedGames = 0;
 
 function formatDuration(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function formatGap(gapSeconds) {
+  return gapSeconds === 0 ? 'Leader' : `+${formatDuration(gapSeconds)}`;
 }
 
 function formatTimestampLabel(isoString) {
@@ -69,6 +74,7 @@ async function loadScoreboard() {
         <td class="rank">${entry.rank}</td>
         <td>${entry.team_name}</td>
         <td class="duration">${formatDuration(entry.duration_seconds)}</td>
+        <td class="duration gap">${formatGap(entry.gap_seconds)}</td>
       </tr>
     `).join('');
 
@@ -96,7 +102,10 @@ async function loadStationComparison() {
           ${station.ranking.map(entry => `
             <li>
               <span>${entry.rank}. ${entry.team_name}</span>
-              <span class="duration">${formatDuration(entry.duration_seconds)}</span>
+              <span class="duration">
+                ${formatDuration(entry.duration_seconds)}
+                <span class="gap">${formatGap(entry.gap_seconds)}</span>
+              </span>
             </li>
           `).join('')}
         </ol>
@@ -115,6 +124,7 @@ async function loadStationComparison() {
 function updateGameSelect(ranking) {
   const selectEl = document.getElementById('game-select');
   const previousValue = selectEl.value;
+  totalRankedGames = ranking.length;
 
   selectEl.innerHTML = ranking.map(entry =>
     `<option value="${entry.game_id}">${entry.team_name} - ${formatTimestampLabel(entry.started_at)}</option>`
@@ -135,7 +145,8 @@ function updateGameSelect(ranking) {
 }
 
 async function loadGameDetail(gameId) {
-  const contentEl = document.getElementById('game-detail-content');
+  const overviewEl = document.getElementById('game-overview-content');
+  const stationsEl = document.getElementById('game-stations-content');
 
   try {
     const response = await fetch(`/games/${gameId}`);
@@ -144,30 +155,46 @@ async function loadGameDetail(gameId) {
     }
     const detail = await response.json();
 
-    contentEl.innerHTML = `
-      <div class="game-overview">
+    overviewEl.innerHTML = `
+      <div class="eyebrow">Result / Defusal Team</div>
+      <div class="team-name-row">
         <div class="team-name">${detail.team_name}</div>
-        <div class="overview-stats">
-          <div>Total time<strong>${formatDuration(detail.duration_seconds)}</strong></div>
-          <div>Overall rank<strong>${detail.overall_rank}</strong></div>
+        <span class="status-badge">&check; Defused</span>
+      </div>
+      <div class="overview-stats">
+        <span class="small-label">Total time</span>
+        <strong>${formatDuration(detail.duration_seconds)}</strong>
+        <small>min:sec &middot; start to end code</small>
+      </div>
+      <div class="stats-row">
+        <div>
+          <span class="small-label">Rank</span>
+          <span class="stat-value">${detail.overall_rank} <span class="stat-total">/ ${totalRankedGames}</span></span>
+        </div>
+        <div>
+          <span class="small-label">Gap to Leader</span>
+          <span class="stat-value">${formatGap(detail.gap_seconds)}</span>
         </div>
       </div>
-      <div class="station-grid">
-        ${detail.stations.map(s => `
-          <div class="station-card">
-            <h3>Station ${s.station_id}</h3>
-            <ol>
-              <li>
-                <span>Rank ${s.rank}</span>
-                <span class="duration">${formatDuration(s.duration_seconds)}</span>
-              </li>
-            </ol>
-          </div>
-        `).join('')}
-      </div>
     `;
+
+    stationsEl.innerHTML = detail.stations.map(s => `
+      <div class="station-card">
+        <h3>Station ${s.station_id}</h3>
+        <ol>
+          <li>
+            <span>Rank ${s.rank}</span>
+            <span class="duration">
+              ${formatDuration(s.duration_seconds)}
+              <span class="gap">${formatGap(s.gap_seconds)}</span>
+            </span>
+          </li>
+        </ol>
+      </div>
+    `).join('');
   } catch (err) {
-    contentEl.innerHTML = `<div class="game-detail-placeholder">Could not load this run.</div>`;
+    overviewEl.innerHTML = `<div class="game-detail-placeholder">Could not load this run.</div>`;
+    stationsEl.innerHTML = '';
     console.error(err);
   }
 }

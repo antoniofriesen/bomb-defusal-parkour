@@ -50,6 +50,7 @@ def test_scoreboard_endpoint_returns_ranking_json():
                 "rank": 1,
                 "team_name": "Alpha",
                 "duration_seconds": 300,
+                "gap_seconds": 0,
                 "started_at": "2026-01-01T10:00:00",
                 "ended_at": "2026-01-01T10:05:00",
             }
@@ -81,8 +82,8 @@ def test_station_comparison_endpoint_returns_ranking_per_station():
             {
                 "station_id": 1,
                 "ranking": [
-                    {"game_id": 1, "rank": 1, "team_name": "Alpha", "duration_seconds": 180},
-                    {"game_id": 2, "rank": 2, "team_name": "Bravo", "duration_seconds": 300},
+                    {"game_id": 1, "rank": 1, "team_name": "Alpha", "duration_seconds": 180, "gap_seconds": 0},
+                    {"game_id": 2, "rank": 2, "team_name": "Bravo", "duration_seconds": 300, "gap_seconds": 120},
                 ],
             }
         ]
@@ -117,8 +118,9 @@ def test_game_detail_endpoint_combines_overall_and_per_station_results():
         "team_name": "Alpha",
         "duration_seconds": 300,
         "overall_rank": 1,
+        "gap_seconds": 0,
         "stations": [
-            {"station_id": 1, "rank": 1, "duration_seconds": 120},
+            {"station_id": 1, "rank": 1, "duration_seconds": 120, "gap_seconds": 0},
         ],
     }
 

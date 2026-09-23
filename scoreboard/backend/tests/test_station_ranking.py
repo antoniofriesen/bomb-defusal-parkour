@@ -56,6 +56,19 @@ def test_fastest_team_is_rank_1_per_station():
     assert ranking[1].rank == 2
 
 
+def test_gap_seconds_is_the_difference_to_the_fastest_team_at_that_station():
+    events = [
+        event(team_name="Fast", station_id=1, timestamp_start="2026-01-01T10:00:00", timestamp_end="2026-01-01T10:02:00"),
+        event(team_name="Slow", station_id=1, timestamp_start="2026-01-01T10:00:00", timestamp_end="2026-01-01T10:05:00"),
+    ]
+
+    stations = build_station_comparison(events)
+
+    ranking = stations[0].ranking
+    assert ranking[0].gap_seconds == 0
+    assert ranking[1].gap_seconds == 180  # 3 min behind
+
+
 def test_stations_are_sorted_by_station_id():
     events = [
         event(station_id=3),

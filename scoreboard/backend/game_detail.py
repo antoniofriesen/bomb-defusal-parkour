@@ -34,6 +34,7 @@ def build_game_detail(
                     station_id=station_ranking.station_id,
                     rank=entry.rank,
                     duration_seconds=entry.duration_seconds,
+                    gap_seconds=entry.gap_seconds,
                 )
             )
 
@@ -42,5 +43,6 @@ def build_game_detail(
         team_name=overall.team_name,
         duration_seconds=overall.duration_seconds,
         overall_rank=overall.rank,
+        gap_seconds=overall.gap_seconds,
         stations=stations,
     )
