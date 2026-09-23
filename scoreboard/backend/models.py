@@ -12,6 +12,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 Outcome = Literal["running", "defused", "exploded"]
+StationState = Literal["idle", "active", "solved"]
 
 
 class Game(BaseModel):
@@ -32,3 +33,30 @@ class RankingEntry(BaseModel):
     duration_seconds: int
     started_at: str
     ended_at: str | None
+
+
+class StationEvent(BaseModel):
+    """One station event, exactly as delivered by the dashboard backend
+    (contract: GET /internal/station-events, see dashboard/backend/README.md).
+    Mirrors the ICD status payload's fields, plus team_name."""
+
+    team_name: str
+    station_id: int
+    state: StationState
+    timestamp_start: str | None = None
+    timestamp_end: str | None = None
+
+
+class StationRankingEntry(BaseModel):
+    """One team's ranked time at one station."""
+
+    rank: int
+    team_name: str
+    duration_seconds: int
+
+
+class StationRanking(BaseModel):
+    """Ranking for a single station, as returned by GET /station-comparison."""
+
+    station_id: int
+    ranking: list[StationRankingEntry]
