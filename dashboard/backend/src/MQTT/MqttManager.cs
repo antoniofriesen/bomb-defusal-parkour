@@ -20,15 +20,45 @@ public static class MqttManager
             .Build();
 
         _mqttClient = _mqttFactory.CreateMqttClient();
-        if (!_mqttClient.ConnectAsync(mqttClientOptions).Wait(500))
+
+        bool clientInactive = false;
+        try
         {
-            Console.WriteLine("Failed to connect to MQTT broker!");
+            if (!_mqttClient.ConnectAsync(mqttClientOptions).Wait(500))
+            {
+                Console.Error.WriteLine($"Failed to connect to MQTT broker at {brokerAddress}:{brokerPort}! (Timeout!)");
+                clientInactive = true;
+            }
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine($"Failed to connect to MQTT broker at {brokerAddress}:{brokerPort} (Exception!){Environment.NewLine}{e}");
+            clientInactive = true;
+        }
+
+        if (clientInactive)
+        {
+            // Schedule a big, visible warning about the MQTT client not being active as the connection to the broker has failed.
+            // Other components of the software will still be available and there might be a situation where the broker is offline but the database still needs to be accessed.
+            // The warning gets shown after a 2 second delay due to other components of this software potentially spamming the console with their own initialization outputs.
+            Task.Run(() => 
+            {
+                Task.Delay(2000).Wait();
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("The MQTT client is not active during this session!" + Environment.NewLine + "The other components of the backend are still available though.");
+                Console.ResetColor();
+            });
             return;
         }
 
         Console.WriteLine("MQTT client connected!");
 
-        _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic("parkour/station/4/status").Build()).Wait();
+        for (int i = 1; i <= 6; i++)
+        {
+            string topic = $"parkour/station/{i}/status";
+            _mqttClient.SubscribeAsync(new MqttTopicFilterBuilder().WithTopic(topic).Build()).Wait();
+            Console.WriteLine("Subscribed to MQTT topic: " + topic);
+        }
         _mqttClient.ApplicationMessageReceivedAsync += HandleReceivedMessage;
 
         Console.WriteLine("MQTT client ready");
