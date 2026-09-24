@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { useGameSession } from '../composables/useGameSession'
+import { useGameSession } from '../composables/useGameSession.js'
 
 const { stations } = useGameSession()
 

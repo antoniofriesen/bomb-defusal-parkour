@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, nextTick, onMounted } from 'vue'
-import { sounds } from '../services/soundEffects'
+import { sounds } from '../services/soundEffects.js'
 import { RotateCcw } from 'lucide-vue-next'
 
 const props = defineProps({

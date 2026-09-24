@@ -1,4 +1,4 @@
-import { STORAGE_KEYS, DEFAULT_MOCK_CODE } from '../constants'
+import { STORAGE_KEYS, DEFAULT_MOCK_CODE } from '../constants/index.js'
 
 /**
  * Backend REST API Client with Mock Mode support

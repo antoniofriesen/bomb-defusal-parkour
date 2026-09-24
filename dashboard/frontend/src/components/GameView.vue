@@ -1,10 +1,10 @@
 <script setup>
 import { ref } from 'vue'
-import { useGameSession } from '../composables/useGameSession'
+import { useGameSession } from '../composables/useGameSession.js'
 import CountdownDisplay from './CountdownDisplay.vue'
 import PinInput from './PinInput.vue'
 import StationsGrid from './StationsGrid.vue'
-import { sounds } from '../services/soundEffects'
+import { sounds } from '../services/soundEffects.js'
 import { RotateCcw, AlertCircle, CheckCircle2 } from 'lucide-vue-next'
 
 const { 

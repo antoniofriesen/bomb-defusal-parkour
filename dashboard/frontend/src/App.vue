@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useGameSession } from './composables/useGameSession'
+import { useGameSession } from './composables/useGameSession.js'
 import HeaderNav from './components/HeaderNav.vue'
 import LandingView from './components/LandingView.vue'
 import GameView from './components/GameView.vue'

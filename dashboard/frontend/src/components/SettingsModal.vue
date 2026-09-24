@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import { useGameSession } from '../composables/useGameSession'
-import { sounds } from '../services/soundEffects'
+import { useGameSession } from '../composables/useGameSession.js'
+import { sounds } from '../services/soundEffects.js'
 import { X, Check, Sliders } from 'lucide-vue-next'
 
 const emit = defineEmits(['close', 'open-mock-ui'])

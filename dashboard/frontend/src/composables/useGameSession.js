@@ -1,7 +1,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { DEFAULT_DURATION_MINUTES, GAME_DURATION_MS, STORAGE_KEYS, INITIAL_STATIONS } from '../constants'
-import { api } from '../services/api'
-import { sounds } from '../services/soundEffects'
+import { DEFAULT_DURATION_MINUTES, GAME_DURATION_MS, STORAGE_KEYS, INITIAL_STATIONS } from '../constants/index.js'
+import { api } from '../services/api.js'
+import { sounds } from '../services/soundEffects.js'
 import confetti from 'canvas-confetti'
 
 const storedDuration = typeof window !== 'undefined' ? Number(localStorage.getItem(STORAGE_KEYS.GAME_DURATION)) : null

@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import { useGameSession } from '../composables/useGameSession'
-import { GAME_DURATION_MS } from '../constants'
+import { useGameSession } from '../composables/useGameSession.js'
+import { GAME_DURATION_MS } from '../constants/index.js'
 
 const { 
   formattedMinutes, 
