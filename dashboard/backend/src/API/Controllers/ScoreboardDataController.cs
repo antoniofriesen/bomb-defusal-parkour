@@ -11,4 +11,10 @@ public class ScoreboardDataController() : ControllerBase
     {
         return Ok(ScoreboardDataControllerLogic.GetGames());
     }
+
+    [HttpGet("internal/station-events")]
+    public ActionResult GetAllHistoricalStationData()
+    {
+        return Ok(ScoreboardDataControllerLogic.GetAllHistoricalStationData());
+    }
 }

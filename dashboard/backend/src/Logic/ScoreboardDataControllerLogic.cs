@@ -22,8 +22,26 @@ public static class ScoreboardDataControllerLogic
         }
     }
 
+    public static StationEvent[] GetAllHistoricalStationData()
+    {
+        using (var con = new DatabaseContext())
+        {
+            List<StationEvent> events = new List<StationEvent>();
+            StationDaten[] data = con.GameData.ToArray();
+
+            foreach (StationDaten d in data)
+            {
+                events.Add(new StationEvent(d.SpielId, d.Spiel.Team.TeamName, d.StationId, d.State, d.TimestampStart, d.TimestampEnd));
+            }
+
+            return events.ToArray();
+        }
+    }
+
     private static SpielReadModel ToReadModel(Spiel instance)
     {
         return new SpielReadModel(instance.SpielId, instance.Outcome, instance.Team.TeamName, instance.StartedAt, instance.EndedAt);
     }
 }
+
+public record StationEvent(int GameId, string TeamName, int StationId, string State, DateTime? TimestampStart, DateTime? TimestampEnd);
