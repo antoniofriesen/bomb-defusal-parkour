@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Endpoints;
@@ -5,17 +6,24 @@ namespace API.Endpoints;
 [ApiController]
 public class GameController() : ControllerBase
 {
-    [HttpGet("dashboard/backend/ping")]
-    public ActionResult PingPong()
+    [HttpPost("dashboard/backend/start")]
+    public ActionResult StartGame([FromBody] StartGameRequest request)
     {
-        return Ok("Pong!");
+        string code = Logic.GameControllerLogic.StartGame(request.team_name, request.member_count);
+        return Ok("{ \"code\": \"" + code + "\" }");
     }
 
-    [HttpPost("dashboard/backend/insertbullshit")]
-    public ActionResult AddMockData()
+    [HttpPost("dashboard/backend/stop")]
+    public ActionResult StopGame()
     {
-        var result = Logic.GameControllerLogic.StoreStationData(new Logic.Models.StationDatenCreateModel(68, "status oder so", "echt toll", DateTime.Now, null));
+        Logic.GameControllerLogic.StopGame();
+        return Ok();
+    }
 
+    [HttpGet("dashboard/backend/status")]
+    public ActionResult GetGameStatus()
+    {
+        var result = Logic.GameControllerLogic.GetGameStatus();
         if (result == null)
         {
             return BadRequest();
@@ -24,3 +32,5 @@ public class GameController() : ControllerBase
         return Ok(result);
     }
 }
+
+public record StartGameRequest(string team_name, int member_count);

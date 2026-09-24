@@ -1,6 +1,8 @@
 ﻿using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Nodes;
+using Logic.Models;
 using MQTTnet;
 
 namespace MQTT;
@@ -66,10 +68,9 @@ public static class MqttManager
 
     private static Task HandleReceivedMessage(MqttApplicationMessageReceivedEventArgs e)
     {
-        throw new NotImplementedException();
-        /*var topic = e.ApplicationMessage.Topic;
+        var topic = e.ApplicationMessage.Topic;
         var payload = e.ApplicationMessage.Payload.ToArray().Length == 0 ? null : System.Text.Encoding.UTF8.GetString(e.ApplicationMessage.Payload.ToArray());
-        Console.WriteLine($"[MQTT] [{topic}]: {payload}");
+        Console.WriteLine($"[MQTT, rec] [{topic}]: {payload}");
         JsonObject? jsonObject = JsonNode.Parse(payload ?? "{}") as JsonObject;
         if (jsonObject == null)
         {
@@ -79,26 +80,71 @@ public static class MqttManager
 
         if (topic.StartsWith("parkour/station/") && topic.EndsWith("/status"))
         {
-            Logic.Models.StationDatenCreateModel stationData = new(
-                SpielId: GameManager.CurrentGameId, // NOT IMPLEMENTED
-                StationId: jsonObject.TryGetPropertyValue("stationId", out JsonNode? stationIdNode) ? stationIdNode?.GetValue<int>() ?? -1 : -1,
-                State: jsonObject.TryGetPropertyValue("state", out JsonNode? stateNode) ? stateNode?.GetValue<string>() ?? "unknown" : "unknown",
-                Rating: jsonObject.TryGetPropertyValue("rating", out JsonNode? ratingNode) ? ratingNode?.GetValue<string>() ?? "unknown" : "unknown",
-                TimestampStart: jsonObject.TryGetPropertyValue("TimestampStart", out JsonNode? timestampStartNode) ? DateTime.Parse(timestampStartNode?.GetValue<string>() ?? "unknown") : DateTime.MinValue,
-                TimestampEnd: jsonObject.TryGetPropertyValue("TimestampEnd", out JsonNode? timestampEndNode) ? DateTime.Parse(timestampEndNode?.GetValue<string>() ?? "unknown") : null
-            );
+            StationDatenCreateModel? create = null;
+            try
+            {
+                Logic.Models.StationDatenCreateModel stationData = new(
+                    StationId: jsonObject.TryGetPropertyValue("station_id", out JsonNode? stationIdNode)
+                        ? stationIdNode?.GetValue<int>() ?? throw new InvalidDataException("Invalid station_id (inner)")
+                        : throw new InvalidDataException("Invalid station_id (outer)"),
+
+                    State: jsonObject.TryGetPropertyValue("state", out JsonNode? stateNode)
+                        ? stateNode?.GetValue<string>() ?? "unknown"
+                        : "unknown",
+
+                    Rating: jsonObject.TryGetPropertyValue("rating", out JsonNode? ratingNode)
+                        ? ratingNode?.GetValue<string>() ?? "unknown"
+                        : "unknown",
+
+                    TimestampStart: jsonObject.TryGetPropertyValue("timestamp_start", out JsonNode? timestampStartNode)
+                        && DateTime.TryParse(timestampStartNode?.GetValue<string>(), out DateTime timestampStart)
+                            ? timestampStart
+                            : null,
+
+                    TimestampEnd: jsonObject.TryGetPropertyValue("timestamp_end", out JsonNode? timestampEndNode)
+                        && DateTime.TryParse(timestampEndNode?.GetValue<string>(), out DateTime timestampEnd)
+                            ? timestampEnd
+                            : null
+                );
+                create = stationData;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+            }
+
+            if (create == null || Logic.GameControllerLogic.StoreStationData(create) == null)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.Error.WriteLine("[MQTT] Failed to store StationData in database!" + Environment.NewLine + "Payload:" + Environment.NewLine + payload);
+                Console.ResetColor();
+            }
         }
-        */
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"[MQTT] Unhandled topic [{topic}]");
+            Console.ResetColor();
+        }
+        
 
         return Task.CompletedTask;
     }
 
-    private static async Task PublishMqttMessage(string topic, string payload)
+    public static void PublishMqttMessage(string topic, string payload)
     {
+        if (_mqttClient == null || !_mqttClient.IsConnected)
+        {
+            Console.Error.WriteLine("MQTT client is not connected! Cannot publish message.");
+            return;
+        }
+
         var message = new MqttApplicationMessageBuilder()
             .WithTopic(topic)
             .WithPayload(Encoding.UTF8.GetBytes(payload))
             .Build();
         _ = _mqttClient.PublishAsync(message);
+
+        Console.WriteLine($"[MQTT, snd] [{topic}]: {payload}");
     }
 }

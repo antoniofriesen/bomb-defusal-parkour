@@ -4,7 +4,7 @@ public record StationDatenReadModel(
     int StationId,
     int SpielId,
     string State,
-    string Rating,
-    DateTime TimestampStart,
+    string? Rating,
+    DateTime? TimestampStart,
     DateTime? TimestampEnd
 );

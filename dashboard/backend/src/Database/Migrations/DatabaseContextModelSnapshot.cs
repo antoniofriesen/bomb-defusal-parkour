@@ -41,7 +41,6 @@ namespace Database.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Rating")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("SpielId")
@@ -57,7 +56,7 @@ namespace Database.Migrations
                     b.Property<DateTime?>("TimestampEnd")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("TimestampStart")
+                    b.Property<DateTime?>("TimestampStart")
                         .HasColumnType("TEXT");
 
                     b.HasKey("StationDatenId");

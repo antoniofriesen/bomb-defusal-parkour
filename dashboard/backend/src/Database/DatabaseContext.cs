@@ -14,7 +14,6 @@ public class DatabaseContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Spiel>().HasMany(s => s.StationDaten).WithOne(d => d.Spiel).HasForeignKey(d => d.SpielId).OnDelete(DeleteBehavior.Cascade);
-        //modelBuilder.Entity<Team>().HasOne(t => t.Spiel).WithOne(s => s.Team).HasForeignKey(s => s.);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
