@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scoreboard - Bomb Defusal Parkour</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="board">
+
+  <header class="board-header">
+    <div class="brand">
+      <div class="brand-title">🏆 Bomb Defusal Parkour</div>
+      <div class="brand-sub">Scoreboard</div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab-button" id="tab-ranking" role="tab" aria-selected="true" aria-controls="panel-ranking">Ranking</button>
+      <button class="tab-button" id="tab-team" role="tab" aria-selected="false" aria-controls="panel-team">Team Detail</button>
+    </nav>
+  </header>
+
+  <div class="status" id="status">Loading...</div>
+
+  <div class="board-columns" id="panel-ranking" role="tabpanel">
+    <div class="board-left">
+      <div class="card">
+        <div class="eyebrow">Archive / Time Comparison</div>
+        <h2 class="panel-title">Overall Ranking</h2>
+        <table id="ranking-table" hidden>
+          <thead>
+            <tr>
+              <th class="rank">Rank</th>
+              <th>Team</th>
+              <th class="duration">Time</th>
+              <th class="duration">Gap</th>
+            </tr>
+          </thead>
+          <tbody id="ranking-body"></tbody>
+        </table>
+        <div class="empty" id="empty-message" hidden>No team has defused the bomb yet.</div>
+      </div>
+    </div>
+    <div class="board-right">
+      <div class="panel-title-row">
+        <h2 class="panel-title">Per-Station Comparison</h2>
+        <span class="panel-note">Free order &middot; min:sec</span>
+      </div>
+      <div class="station-grid" id="station-grid"></div>
+    </div>
+  </div>
+
+  <div class="board-columns" id="panel-team" role="tabpanel" hidden>
+    <div class="board-left">
+      <div class="game-select-row">
+        <label for="game-select">Select a team's run:</label>
+        <select id="game-select"></select>
+      </div>
+      <div class="card" id="game-overview-content"></div>
+    </div>
+    <div class="board-right">
+      <div class="panel-title-row">
+        <h2 class="panel-title">Station Results</h2>
+        <span class="panel-note">min:sec</span>
+      </div>
+      <div class="station-grid" id="game-stations-content"></div>
+    </div>
+  </div>
+
+  <footer class="board-footer">
+    <span>Bomb Defusal Parkour &middot; Coordination Team Scoreboard</span>
+    <span id="footer-live-note">Auto-refresh every 3s</span>
+  </footer>
+
+</div>
+
+<script src="js/app.js"></script>
+
+</body>
+</html>

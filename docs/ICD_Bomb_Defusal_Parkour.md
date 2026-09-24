@@ -37,7 +37,6 @@ Note: upon receiving a new `digit` on `start` (i.e. at the beginning of a new ga
   "station_id": 1,
   "state": "solved",
   "rating": "green",
-  "duration_seconds": 300,
   "timestamp_start": "2026-09-17T10:15:00",
   "timestamp_end": "2026-09-17T10:20:00"
 }
@@ -46,15 +45,28 @@ Note: upon receiving a new `digit` on `start` (i.e. at the beginning of a new ga
 |---|---|---|---|
 | 1 | station_id | int | identifies which station sent the update |
 | 2 | state | enum (string): `"idle"` \| `"active"` \| `"solved"` | `idle` = not yet started, `active` = a player is currently at the station, `solved` = puzzle solved |
-| 3 | rating | enum (string): `"green"` \| `"yellow"` \| `"red"` | visitor feedback |
-| 4 | duration_seconds | int or `null` | seconds taken to solve — `null` if not yet solved (avoids ambiguity with a genuine near-instant solve, and with clock-skew bugs producing a negative number) |
-| 5 | timestamp_start | string (ISO 8601) | when the player started interacting with the station |
-| 6 | timestamp_end | string (ISO 8601) or `null` | when the station was solved — `null` if not yet solved |
+| 3 | rating | enum (string): `"green"` \| `"yellow"` \| `"red"` or `null` | visitor feedback — `null` as long as the station has not been played yet (e.g. the `idle` message sent on reset) |
+| 4 | timestamp_start | string (ISO 8601) or `null` | when the player started interacting with the station — `null` as long as the station has not been played yet (e.g. the `idle` message sent on reset) |
+| 5 | timestamp_end | string (ISO 8601) or `null` | when the station was solved — `null` if not yet solved |
+
+Example of the `idle` message a station sends after receiving a new `digit` (nothing played yet, so all optional fields are `null`):
+```json
+{
+  "station_id": 1,
+  "state": "idle",
+  "rating": null,
+  "timestamp_start": null,
+  "timestamp_end": null
+}
+```
+
+Note: duration is intentionally not sent as its own field — it is fully derivable as `timestamp_end - timestamp_start` (both recorded by the same station, same clock, so no precision is lost by computing it on the receiving side instead).
 
 ## Dependencies
-- Every station is responsible for using `mqtt_interface.py` (or an equivalent implementing the same contract) instead of writing custom MQTT logic — this is what keeps every station compatible with the broker and dashboard.
+- Every station implements its own MQTT connection (paho-mqtt: connect, subscribe, publish) - this is intentionally not shared, so every station learns the MQTT mechanics themselves.
+- Every station is responsible for using `icd_interface.py` (`ICDInterface.start_payload()` / `ICDInterface.status_payload()`) to build its payloads, instead of hand-building the JSON - this is what keeps every station's payloads compatible with the broker and dashboard, regardless of how each station's own MQTT code is written.
 - Stations never communicate with each other directly; all communication goes through the Coordination Team's broker.
 - A station cannot start its puzzle before receiving its `digit` on the `start` topic — it depends on the Coordination Team publishing that message first.
-- Every station is responsible for resetting its own state to `idle` and publishing that reset whenever it receives a new `digit` — otherwise the dashboard could keep showing a stale `solved` status from a previous round.
-- The Coordination Team depends on every station correctly publishing `status` updates (especially `station_id` and `status`) — without them, the dashboard cannot show live progress or assemble the final code.
+- Every station is responsible for resetting its own state to `idle` and publishing that reset whenever it receives a new `digit` — otherwise the dashboard could keep showing a stale `solved` state from a previous round.
+- The Coordination Team depends on every station correctly publishing `status` updates (especially `station_id` and `state`) — without them, the dashboard cannot show live progress or assemble the final code.
 - The Coordination Team is responsible for operating the broker; if it is unreachable, no station can receive its digit or report its status.
