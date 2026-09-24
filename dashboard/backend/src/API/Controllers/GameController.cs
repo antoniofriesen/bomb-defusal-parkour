@@ -14,9 +14,9 @@ public class GameController() : ControllerBase
     }
 
     [HttpPost("dashboard/backend/stop")]
-    public ActionResult StopGame()
+    public ActionResult StopGame([FromBody] string outcome)
     {
-        Logic.GameControllerLogic.StopGame();
+        Logic.GameControllerLogic.StopGame(outcome);
         return Ok();
     }
 

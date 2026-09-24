@@ -1,7 +1,6 @@
 ﻿using Database;
 using Database.Entities;
 using Logic.Models;
-using MQTT;
 
 namespace Logic;
 
@@ -39,9 +38,16 @@ public static class GameControllerLogic
         return code;
     }
 
-    public static void StopGame()
+    public static void StopGame(string outcome)
     {
-        Console.WriteLine("Stop has been called, noting implemented though!");
+        using (var con = new DatabaseContext())
+        {
+            Spiel currentGame = con.Games.OrderByDescending(g => g.SpielId).First();
+            currentGame.EndedAt = DateTime.UtcNow;
+            currentGame.Outcome = outcome;
+
+            con.SaveChanges();
+        }
     }
 
     public static StationDatenReadModel? StoreStationData(StationDatenCreateModel model)
