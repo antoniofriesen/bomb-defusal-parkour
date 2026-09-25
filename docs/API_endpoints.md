@@ -7,7 +7,7 @@ Version: v1 – Draft – 2026-09-23
 Two backend services, each documented in its own section below:
 
 - **Scoreboard Backend** (Python/FastAPI, `scoreboard/backend/`) - implemented and tested. Reads game/station data, builds rankings, serves the scoreboard page.
-- **Dashboard Backend** (C#/.NET, `dashboard/backend/`) - owns the database and the MQTT connection. The Scoreboard Backend depends on two endpoints from it (Section 2) that don't exist yet.
+- **Dashboard Backend** (C#/.NET, `dashboard/backend/`) - owns the database and the MQTT connection. The Scoreboard Backend depends on two endpoints from it (Section 2).
 
 ```
 Stations --MQTT (ICD)--> Dashboard Backend --owns--> Database
@@ -89,9 +89,11 @@ Response `404`: `game_id` doesn't exist or isn't a `defused` game.
 
 ## 2. Internal API needed from the Dashboard Backend
 
-**⚠️ NOT IMPLEMENTED YET - owned by the Dashboard Team.** The Scoreboard Backend currently runs against fake data (`repositories/fake_repository.py`, `repositories/fake_station_events_repository.py`) until these two endpoints exist. See `dashboard/backend/README.md` for the same contract with setup instructions.
+**✅ Implemented by the Dashboard Team.** The Scoreboard Backend can run against fake data (`repositories/fake_repository.py`, `repositories/fake_station_events_repository.py`) or against these real endpoints, controlled by `SCOREBOARD_USE_FAKE_DATA`.
 
-Both endpoints: return **everything**, unfiltered and unsorted - the Scoreboard Backend does all filtering/sorting/ranking itself. Keep this as simple as possible on your side.
+Both endpoints: return **everything**, unfiltered and unsorted - the Scoreboard Backend does all filtering/sorting/ranking itself.
+
+**Field naming: camelCase**, not snake_case (differs from Section 1/3 below). This is ASP.NET Core's default JSON serialization for the Dashboard Backend's C# models - kept as-is rather than requiring extra configuration on that side. The Scoreboard Backend's Pydantic models accept both spellings (`alias_generator`), so this only affects what you see on the wire, not the Python field names used elsewhere in the codebase.
 
 | Method | Path | Status |
 |---|---|---|
@@ -123,12 +125,12 @@ One entry per game (every attempt, by every team, regardless of outcome).
 |---|---|---|
 | `gameId` | int | unique per attempt - the same team can play more than once |
 | `teamName` | string | as entered at game start |
-| `outcome` | string | `"running"` \| `"defused"` \| `"exploded"` |
+| `outcome` | `"running"` \| `"defused"` \| `"exploded"` | |
 | `startedAt` | string (ISO 8601) | |
 | `endedAt` | string (ISO 8601) or `null` | `null` while `running` |
 
 ### `GET /internal/station-events`
-One entry per station event ever recorded (mirrors the ICD `status` payload, plus `team_name` and `game_id`).
+One entry per station event ever recorded (mirrors the ICD `status` payload, plus `teamName` and `gameId`).
 
 ```json
 [

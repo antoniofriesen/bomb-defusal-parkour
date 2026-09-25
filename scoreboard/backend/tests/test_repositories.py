@@ -19,14 +19,16 @@ def test_fake_repository_returns_game_objects():
 
 @patch("repositories.http_repository.requests.get")
 def test_http_repository_parses_response_into_games(mock_get):
+    # camelCase, matching the real dashboard backend's ASP.NET Core default
+    # JSON serialization - not the snake_case used elsewhere in this codebase.
     mock_response = Mock()
     mock_response.json.return_value = [
         {
-            "game_id": 1,
-            "team_name": "Alpha Team",
+            "gameId": 1,
+            "teamName": "Alpha Team",
             "outcome": "defused",
-            "started_at": "2026-09-21T10:00:00",
-            "ended_at": "2026-09-21T10:38:12",
+            "startedAt": "2026-09-21T10:00:00",
+            "endedAt": "2026-09-21T10:38:12",
         }
     ]
     mock_get.return_value = mock_response

@@ -46,8 +46,8 @@ Note: upon receiving a new `digit` on `start` (i.e. at the beginning of a new ga
 | 1 | station_id | int | identifies which station sent the update |
 | 2 | state | enum (string): `"idle"` \| `"active"` \| `"solved"` | `idle` = not yet started, `active` = a player is currently at the station, `solved` = puzzle solved |
 | 3 | rating | enum (string): `"green"` \| `"yellow"` \| `"red"` or `null` | visitor feedback — `null` as long as the station has not been played yet (e.g. the `idle` message sent on reset) |
-| 4 | timestamp_start | string (ISO 8601) or `null` | when the player started interacting with the station — `null` as long as the station has not been played yet (e.g. the `idle` message sent on reset) |
-| 5 | timestamp_end | string (ISO 8601) or `null` | when the station was solved — `null` if not yet solved |
+| 4 | timestamp_start | string (as shown in the example above) or `null` | when the player started interacting with the station — `null` as long as the station has not been played yet (e.g. the `idle` message sent on reset) |
+| 5 | timestamp_end | string (as shown in the example above) or `null` | when the station was solved — `null` if not yet solved |
 
 Example of the `idle` message a station sends after receiving a new `digit` (nothing played yet, so all optional fields are `null`):
 ```json

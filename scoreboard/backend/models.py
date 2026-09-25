@@ -9,7 +9,8 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 Outcome = Literal["running", "defused", "exploded"]
 StationState = Literal["idle", "active", "solved"]
@@ -17,11 +18,17 @@ StationState = Literal["idle", "active", "solved"]
 
 class Game(BaseModel):
     """A game, exactly as delivered by the dashboard backend
-    (contract: GET /internal/games, see dashboard/backend/README.md).
+    (contract: GET /internal/games, see docs/API_endpoints.md).
+
+    The dashboard backend sends camelCase (its ASP.NET Core default) -
+    alias_generator accepts that on the wire while the rest of this
+    codebase keeps using snake_case field names.
 
     game_id identifies one specific attempt, since the same team can
     play multiple times - needed to link a game to its own station
     events (a team's second attempt must not mix with its first)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     game_id: int
     team_name: str
@@ -44,9 +51,15 @@ class RankingEntry(BaseModel):
 
 class StationEvent(BaseModel):
     """One station event, exactly as delivered by the dashboard backend
-    (contract: GET /internal/station-events, see dashboard/backend/README.md).
+    (contract: GET /internal/station-events, see docs/API_endpoints.md).
     Mirrors the ICD status payload's fields, plus team_name and game_id
-    (see Game.game_id above for why it's needed)."""
+    (see Game.game_id above for why it's needed).
+
+    The dashboard backend sends camelCase (its ASP.NET Core default) -
+    alias_generator accepts that on the wire while the rest of this
+    codebase keeps using snake_case field names."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     game_id: int
     team_name: str
