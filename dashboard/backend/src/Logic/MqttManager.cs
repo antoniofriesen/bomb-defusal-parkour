@@ -26,7 +26,7 @@ public static class MqttManager
         bool clientInactive = false;
         try
         {
-            if (!_mqttClient.ConnectAsync(mqttClientOptions).Wait(500))
+            if (!_mqttClient.ConnectAsync(mqttClientOptions).Wait(5000))
             {
                 Console.Error.WriteLine($"Failed to connect to MQTT broker at {brokerAddress}:{brokerPort}! (Timeout!)");
                 clientInactive = true;

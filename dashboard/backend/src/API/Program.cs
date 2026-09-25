@@ -10,5 +10,5 @@ app.UseSwaggerUI();
 app.UseAuthorization();
 app.MapControllers();
 
-MQTT.MqttManager.StartMqttClient("192.168.50.1", 1883);
+MQTT.MqttManager.StartMqttClient("172.17.0.1", 1883);
 app.Run();
