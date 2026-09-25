@@ -12,7 +12,7 @@ services:
     ports:
       - "${DASHBOARD_BACKEND_PORT:-5175}:5175"
     environment:
-      - MQTT_BROKER_HOST=${MQTT_BROKER_HOST:-192.168.50.1}
+      - MQTT_BROKER_HOST=${MQTT_BROKER_HOST:-172.17.0.1}
       - MQTT_BROKER_PORT=${MQTT_BROKER_PORT:-1883}
       - ASPNETCORE_URLS=http://0.0.0.0:5175
       - DATABASE_CONNECTION_STRING=Data Source=/app/data/Backend.db
@@ -72,28 +72,6 @@ services:
       - "${SCOREBOARD_FRONTEND_PORT:-8002}:80"
     depends_on:
       - scoreboard-backend
-    networks:
-      - parkour-network
-
-  # ============================================================================
-  # 5. Station / Module Test Simulator (Optional Tool)
-  # Run via: docker compose run --rm module-test
-  # ============================================================================
-  module-test:
-    build:
-      context: ./module_test
-      dockerfile: Dockerfile
-    image: ghcr.io/${IMAGE_PREFIX:-antoniofriesen}/bomb-defusal-module-test:${IMAGE_TAG:-latest}
-    container_name: bomb-defusal-module-test
-    profiles:
-      - tools
-    stdin_open: true
-    tty: true
-    environment:
-      - BROKER_HOST=${MQTT_BROKER_HOST:-192.168.50.1}
-      - BROKER_PORT=${MQTT_BROKER_PORT:-1883}
-      - BROKER_USERNAME=${MQTT_BROKER_USERNAME:-pi_user}
-      - BROKER_PASSWORD=${MQTT_BROKER_PASSWORD:-group-1}
     networks:
       - parkour-network
 

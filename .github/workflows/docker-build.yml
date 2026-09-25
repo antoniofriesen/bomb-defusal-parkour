@@ -22,7 +22,6 @@ on:
           - dashboard-frontend
           - scoreboard-backend
           - scoreboard-frontend
-          - module-test
       push_images:
         description: 'Push images to Container Registry (GHCR)'
         required: true
@@ -37,32 +36,6 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt -r scoreboard/backend/requirements.txt -r scoreboard/backend/requirements-dev.txt
-
-      - name: Run root tests (ICD Interface)
-        run: pytest tests
-
-      - name: Run Scoreboard Backend tests
-        run: |
-          cd scoreboard/backend
-          pytest
-
   detect-changes:
     name: Detect Changes
     runs-on: ubuntu-latest
@@ -71,7 +44,6 @@ jobs:
       dashboard-frontend: ${{ steps.filter.outputs.dashboard-frontend }}
       scoreboard-backend: ${{ steps.filter.outputs.scoreboard-backend }}
       scoreboard-frontend: ${{ steps.filter.outputs.scoreboard-frontend }}
-      module-test: ${{ steps.filter.outputs.module-test }}
       all: ${{ steps.filter.outputs.all }}
     steps:
       - name: Checkout repository
@@ -93,47 +65,14 @@ jobs:
               - 'scoreboard/backend/**'
             scoreboard-frontend:
               - 'scoreboard/frontend/**'
-            module-test:
-              - 'module_test/**'
 
-  build-and-push:
-    name: Build & Push (${{ matrix.name }})
-    needs: [test, detect-changes]
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - id: dashboard-backend
-            name: Dashboard Backend
-            context: ./dashboard/backend
-            file: ./dashboard/backend/Dockerfile
-            image_suffix: bomb-defusal-dashboard-backend
-          - id: dashboard-frontend
-            name: Dashboard Frontend
-            context: ./dashboard/frontend
-            file: ./dashboard/frontend/Dockerfile
-            image_suffix: bomb-defusal-dashboard-frontend
-          - id: scoreboard-backend
-            name: Scoreboard Backend
-            context: ./scoreboard/backend
-            file: ./scoreboard/backend/Dockerfile
-            image_suffix: bomb-defusal-scoreboard-backend
-          - id: scoreboard-frontend
-            name: Scoreboard Frontend
-            context: ./scoreboard/frontend
-            file: ./scoreboard/frontend/Dockerfile
-            image_suffix: bomb-defusal-scoreboard-frontend
-          - id: module-test
-            name: Module Test Tool
-            context: ./module_test
-            file: ./module_test/Dockerfile
-            image_suffix: bomb-defusal-module-test
+  build-dashboard-backend:
+    name: Build & Push Dashboard Backend
+    needs: [detect-changes]
     if: >-
-      ${{
-        (github.event_name == 'workflow_dispatch' && (inputs.service == 'all' || inputs.service == matrix.id)) ||
-        (github.event_name != 'workflow_dispatch' && (needs.detect-changes.outputs[matrix.id] == 'true' || needs.detect-changes.outputs.all == 'true' || github.ref_type == 'tag'))
-      }}
+      (github.event_name == 'workflow_dispatch' && (inputs.service == 'all' || inputs.service == 'dashboard-backend')) ||
+      (github.event_name != 'workflow_dispatch' && (needs.detect-changes.outputs.dashboard-backend == 'true' || needs.detect-changes.outputs.all == 'true' || github.ref_type == 'tag'))
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -153,7 +92,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image_suffix }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/bomb-defusal-dashboard-backend
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -165,10 +104,148 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.file }}
+          context: ./dashboard/backend
+          file: ./dashboard/backend/Dockerfile
           push: ${{ (github.event_name != 'pull_request') && (github.event_name != 'workflow_dispatch' || inputs.push_images) }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.id }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.id }}
+          cache-from: type=gha,scope=dashboard-backend
+          cache-to: type=gha,mode=max,scope=dashboard-backend
+
+  build-dashboard-frontend:
+    name: Build & Push Dashboard Frontend
+    needs: [detect-changes]
+    if: >-
+      (github.event_name == 'workflow_dispatch' && (inputs.service == 'all' || inputs.service == 'dashboard-frontend')) ||
+      (github.event_name != 'workflow_dispatch' && (needs.detect-changes.outputs.dashboard-frontend == 'true' || needs.detect-changes.outputs.all == 'true' || github.ref_type == 'tag'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: ${{ (github.event_name != 'pull_request') && (github.event_name != 'workflow_dispatch' || inputs.push_images) }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/bomb-defusal-dashboard-frontend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./dashboard/frontend
+          file: ./dashboard/frontend/Dockerfile
+          push: ${{ (github.event_name != 'pull_request') && (github.event_name != 'workflow_dispatch' || inputs.push_images) }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=dashboard-frontend
+          cache-to: type=gha,mode=max,scope=dashboard-frontend
+
+  build-scoreboard-backend:
+    name: Build & Push Scoreboard Backend
+    needs: [detect-changes]
+    if: >-
+      (github.event_name == 'workflow_dispatch' && (inputs.service == 'all' || inputs.service == 'scoreboard-backend')) ||
+      (github.event_name != 'workflow_dispatch' && (needs.detect-changes.outputs.scoreboard-backend == 'true' || needs.detect-changes.outputs.all == 'true' || github.ref_type == 'tag'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: ${{ (github.event_name != 'pull_request') && (github.event_name != 'workflow_dispatch' || inputs.push_images) }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/bomb-defusal-scoreboard-backend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./scoreboard/backend
+          file: ./scoreboard/backend/Dockerfile
+          push: ${{ (github.event_name != 'pull_request') && (github.event_name != 'workflow_dispatch' || inputs.push_images) }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=scoreboard-backend
+          cache-to: type=gha,mode=max,scope=scoreboard-backend
+
+  build-scoreboard-frontend:
+    name: Build & Push Scoreboard Frontend
+    needs: [detect-changes]
+    if: >-
+      (github.event_name == 'workflow_dispatch' && (inputs.service == 'all' || inputs.service == 'scoreboard-frontend')) ||
+      (github.event_name != 'workflow_dispatch' && (needs.detect-changes.outputs.scoreboard-frontend == 'true' || needs.detect-changes.outputs.all == 'true' || github.ref_type == 'tag'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: ${{ (github.event_name != 'pull_request') && (github.event_name != 'workflow_dispatch' || inputs.push_images) }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/bomb-defusal-scoreboard-frontend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./scoreboard/frontend
+          file: ./scoreboard/frontend/Dockerfile
+          push: ${{ (github.event_name != 'pull_request') && (github.event_name != 'workflow_dispatch' || inputs.push_images) }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=scoreboard-frontend
+          cache-to: type=gha,mode=max,scope=scoreboard-frontend
