@@ -19,6 +19,14 @@ ENV/
 .pytest_cache/
 .ruff_cache/
 
+# C#
+obj/
+bin/
+*.http
+*.db-*
+Migrations/
+
+
 # Node / Dashboard frontend
 node_modules/
 npm-debug.log*
