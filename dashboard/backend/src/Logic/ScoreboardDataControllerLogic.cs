@@ -1,6 +1,7 @@
 using Database;
 using Database.Entities;
 using Logic.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Logic;
 
@@ -10,7 +11,7 @@ public static class ScoreboardDataControllerLogic
     {
         using (var con = new DatabaseContext())
         {
-            Spiel[] allGames = con.Games.ToArray();
+            Spiel[] allGames = con.Games.Include(g => g.Team).ToArray();
             SpielReadModel[] allModels = new SpielReadModel[allGames.Length];
 
             for (int i = 0; i < allGames.Length; i++)
@@ -27,7 +28,7 @@ public static class ScoreboardDataControllerLogic
         using (var con = new DatabaseContext())
         {
             List<StationEvent> events = new List<StationEvent>();
-            StationDaten[] data = con.GameData.ToArray();
+            StationDaten[] data = con.GameData.Include(g => g.Spiel).ThenInclude(s => s.Team).ToArray();
 
             foreach (StationDaten d in data)
             {
