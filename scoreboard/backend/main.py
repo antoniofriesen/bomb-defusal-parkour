@@ -18,6 +18,7 @@ controlled via config.py (environment variable SCOREBOARD_USE_FAKE_DATA).
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException
@@ -102,5 +103,9 @@ def game_detail(
 
 
 # Serves scoreboard/frontend/ as a website (no second server needed)
-frontend_dir = Path(__file__).parent.parent / "frontend"
-app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+frontend_dir = Path(os.environ.get("SCOREBOARD_FRONTEND_DIR", Path(__file__).parent.parent / "frontend"))
+if not frontend_dir.exists():
+    frontend_dir = Path(__file__).parent / "frontend"
+
+if frontend_dir.exists():
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")

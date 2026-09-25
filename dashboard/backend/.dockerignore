@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/*.user
+Backend.db
+Backend.db-*
+*.db

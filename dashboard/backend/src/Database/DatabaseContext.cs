@@ -1,4 +1,4 @@
-﻿using Database.Entities;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database;
@@ -20,7 +20,8 @@ public class DatabaseContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlite("Data Source=Backend.db");
+            var connStr = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") ?? "Data Source=Backend.db";
+            optionsBuilder.UseSqlite(connStr);
         }
     }
 }

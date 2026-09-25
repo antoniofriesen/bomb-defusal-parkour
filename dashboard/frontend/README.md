@@ -71,18 +71,17 @@ Der Entwicklungsserver läuft standardmäßig unter: **`http://localhost:5173`**
      - State: `idle` (grau), `active` (blau), `solved` (grün)
      - Ampel-Feedback: `green`, `yellow`, `red`
      - Berechnete Dauer (`timestamp_end - timestamp_start`)
-   - Im Live-Betrieb werden die Stationen automatisch über `GET /api/game/status` synchronisiert.
+   - Im Live-Betrieb werden die Stationen automatisch über `GET /dashboard/backend/status` synchronisiert.
 
 ---
 
 ## 🔌 Backend REST-Schnittstelle
 
-Die gesamte Kommunikation erfolgt über eine REST-API (`src/services/api.js`):
+Die gesamte Kommunikation erfolgt über die REST-API des Dashboard-Backends (`src/services/api.js`):
 
 - **Endpunkte:**
-  - `POST /api/game/start`: Übergibt `{ team_name, participant_count, duration_seconds }`
-  - `POST /api/game/stop`: Stoppt / bricht das laufende Spiel ab
-  - `GET  /api/game/status`: Liefert den aktuellen Spiel- und Stationsstatus
-  - `POST /api/game/check-code`: Prüft den 6-stelligen Entschärfungscode (`{ code, team_name }`)
+  - `POST /dashboard/backend/start`: Übergibt `{ "team_name": string, "member_count": int }`, registriert das Spiel und liefert den generierten Entschärfungscode `{ "code": string }` zurück.
+  - `POST /dashboard/backend/stop`: Übergibt `{ "outcome": "defused" | "exploded" }`, stoppt das Spiel in der Datenbank und setzt den Endzeitpunkt.
+  - `GET  /dashboard/backend/status`: Liefert den aktuellen Status aller Stationen als Array (`[{ stationDatenId, stationId, spielId, state, rating, timestampStart, timestampEnd }]`).
 - **Konfiguration:**
-  - Die Backend-URL (Standard: `http://localhost:8000/api`) lässt sich über den Klick auf **LF07** anpassen oder direkt in `src/services/api.js` konfigurieren.
+  - Die Backend-URL (Standard: `http://localhost:5175`) lässt sich über den Klick auf **LF07** in der Navigation anpassen oder direkt in `src/services/api.js` konfigurieren. Im Docker-Setup wird der Proxy über Nginx (`/dashboard/backend/`) automatisch geroutet.

@@ -18,6 +18,7 @@ const remainingMs = ref(gameDurationMinutes.value * 60 * 1000)
 const isMockMode = ref(api.isMockMode())
 const backendUrl = ref(api.getBaseUrl())
 const mockSolutionCode = ref(api.getMockCode())
+const activeGameCode = ref(api.getActiveGameCode() || '')
 const stations = ref(JSON.parse(JSON.stringify(INITIAL_STATIONS)))
 const lastCheckedCode = ref('')
 const lastValidationResult = ref(null) // { success: boolean, correct: boolean, message: string }
@@ -82,7 +83,8 @@ export function useGameSession() {
       currentView: currentView.value,
       stations: stations.value,
       codeAttempts: codeAttempts.value,
-      lastValidationResult: lastValidationResult.value
+      lastValidationResult: lastValidationResult.value,
+      activeGameCode: activeGameCode.value
     }
     localStorage.setItem(STORAGE_KEYS.GAME_SESSION, JSON.stringify(sessionData))
   }
@@ -103,6 +105,11 @@ export function useGameSession() {
       stations.value = data.stations || JSON.parse(JSON.stringify(INITIAL_STATIONS))
       codeAttempts.value = data.codeAttempts || []
       lastValidationResult.value = data.lastValidationResult || null
+
+      if (data.activeGameCode) {
+        activeGameCode.value = data.activeGameCode
+        api.setActiveGameCode(data.activeGameCode)
+      }
 
       if (data.gameStatus === 'running' && data.targetEndTime) {
         const now = Date.now()
@@ -152,6 +159,32 @@ export function useGameSession() {
 
   let statusPollIntervalId = null
 
+  const updateStationsFromStatusData = (data) => {
+    if (!data) return
+    const items = Array.isArray(data) ? data : (Array.isArray(data.stations) ? data.stations : null)
+    if (!items) return
+
+    stations.value = stations.value.map(st => {
+      const match = items.find(d => (d.stationId === st.id || d.station_id === st.id || d.id === st.id))
+      if (match) {
+        const rating = (match.rating && match.rating !== 'unknown') ? match.rating : null
+        const digit = (match.state === 'solved' && activeGameCode.value && activeGameCode.value[st.id - 1]) 
+          ? activeGameCode.value[st.id - 1] 
+          : st.digit
+
+        return {
+          ...st,
+          state: match.state || st.state,
+          rating,
+          digit,
+          timestamp_start: match.timestampStart || match.timestamp_start || st.timestamp_start,
+          timestamp_end: match.timestampEnd || match.timestamp_end || st.timestamp_end
+        }
+      }
+      return st
+    })
+  }
+
   const startStatusPolling = () => {
     stopStatusPolling()
     if (isMockMode.value) return
@@ -160,14 +193,9 @@ export function useGameSession() {
       if (gameStatus.value !== 'running' || isMockMode.value) return
       const statusData = await api.getGameStatus()
       if (statusData) {
-        if (statusData.stations && Array.isArray(statusData.stations)) {
-          stations.value = statusData.stations
-        }
-        if (statusData.active === false && gameStatus.value === 'running') {
-          await resetGame()
-        }
+        updateStationsFromStatusData(statusData)
       }
-    }, 2500)
+    }, 2000)
   }
 
   const stopStatusPolling = () => {
@@ -240,6 +268,11 @@ export function useGameSession() {
       codeAttempts.value = []
       lastValidationResult.value = null
 
+      if (response.code) {
+        activeGameCode.value = response.code
+        api.setActiveGameCode(response.code)
+      }
+
       // Reset station states for fresh run
       resetStations()
 
@@ -284,7 +317,7 @@ export function useGameSession() {
 
       if (result.correct) {
         // Bomb defused successfully!
-        handleDefusal()
+        await handleDefusal()
       } else {
         sounds.playFailure()
       }
@@ -297,17 +330,20 @@ export function useGameSession() {
   }
 
   // Defusal Success
-  const handleDefusal = () => {
+  const handleDefusal = async () => {
     stopTimerLoop()
     stopMockStationProgression()
     isTimerPaused.value = false
     gameStatus.value = 'defused'
     if (!lastCheckedCode.value) {
-      lastCheckedCode.value = mockSolutionCode.value || '739215'
+      lastCheckedCode.value = activeGameCode.value || mockSolutionCode.value || '739215'
     }
     currentView.value = 'result'
     persistSession()
     sounds.playSuccess()
+
+    // Notify backend that bomb was defused
+    await api.stopGame({ outcome: 'defused' })
 
     // Trigger victory confetti!
     try {
@@ -336,7 +372,7 @@ export function useGameSession() {
   }
 
   // Detonation / Time Run Out
-  const handleDetonation = () => {
+  const handleDetonation = async () => {
     stopTimerLoop()
     stopMockStationProgression()
     isTimerPaused.value = false
@@ -345,6 +381,9 @@ export function useGameSession() {
     currentView.value = 'result'
     persistSession()
     sounds.playAlarm()
+
+    // Notify backend that bomb exploded
+    await api.stopGame({ outcome: 'exploded' })
   }
 
   // Abort / Reset game
@@ -352,13 +391,17 @@ export function useGameSession() {
     stopTimerLoop()
     stopMockStationProgression()
     isTimerPaused.value = false
-    await api.stopGame()
+    if (gameStatus.value === 'running') {
+      await api.stopGame({ outcome: 'exploded' })
+    }
     gameStatus.value = 'not_started'
     startTime.value = null
     targetEndTime.value = null
     remainingMs.value = gameDurationMinutes.value * 60 * 1000
     lastValidationResult.value = null
     codeAttempts.value = []
+    activeGameCode.value = ''
+    api.setActiveGameCode('')
     currentView.value = 'landing'
     resetStations()
     persistSession()
@@ -704,6 +747,7 @@ export function useGameSession() {
     isMockMode,
     backendUrl,
     mockSolutionCode,
+    activeGameCode,
     stations,
     lastCheckedCode,
     lastValidationResult,

@@ -12,6 +12,7 @@ import time
 import json
 import random
 import re
+import os
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Tuple
 import paho.mqtt.client as mqtt
@@ -19,10 +20,10 @@ import paho.mqtt.client as mqtt
 # ==============================================================================
 # BROKER-KONFIGURATION & GLOBALE EINSTELLUNGEN
 # ==============================================================================
-BROKER_HOST = "172.17.0.1"
-BROKER_PORT = 1883
-USERNAME = "pi_user"
-PASSWORD = "group-1"
+BROKER_HOST = os.environ.get("BROKER_HOST", "172.17.0.1")
+BROKER_PORT = int(os.environ.get("BROKER_PORT", "1883"))
+USERNAME = os.environ.get("BROKER_USERNAME", "pi_user")
+PASSWORD = os.environ.get("BROKER_PASSWORD", "group-1")
 NUM_STATIONS = 6
 
 # ANSI-Farbcodes für saubere Terminalausgabe

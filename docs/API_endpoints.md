@@ -111,6 +111,13 @@ One entry per game (every attempt, by every team, regardless of outcome).
     "outcome": "defused",
     "startedAt": "2026-09-22T09:00:00",
     "endedAt": "2026-09-22T09:22:05"
+  },
+  {
+    "gameId": 4,
+    "teamName": "Beta Team",
+    "outcome": "exploded",
+    "startedAt": "2026-09-22T09:00:00",
+    "endedAt": "2026-09-22T09:22:05"
   }
 ]
 ```
@@ -150,6 +157,74 @@ One entry per station event ever recorded (mirrors the ICD `status` payload, plu
 
 ## 3. Dashboard Public API (browser ↔ Dashboard Backend)
 
-**To be documented by the Dashboard Team.** This section covers the endpoints the Dashboard frontend calls directly (start a game, submit a code attempt, live updates, etc.) - not part of the Scoreboard's contract, but belongs in this document so the whole system's API surface is in one place.
+| Method | Path | Status |
+|---|---|---|
+| `GET` | `/dashboard/backend/status` | ✅ Implemented |
+| `POST` | `/dashboard/backend/start` | ✅ Implemented |
+| `POST` | `/dashboard/backend/stop` | ✅ Implemented |
 
-_(Dashboard Team: add your endpoints here, same format as Section 1 - method, path, example request/response, status codes.)_
+### `GET /dashboard/backend/status`
+One entry per station, returns the last known status of every station; If the state of a station is unknown, it will be missing
+
+Response Example:
+```json
+[
+    {
+        "stationDatenId": 1,
+        "stationId": 1,
+        "spielId": 9,
+        "state": "solved",
+        "rating": "yellow",
+        "timestampStart": "2026-09-25T00:07:22",
+        "timestampEnd": "2026-09-25T00:07:29"
+    },
+    {
+        "stationDatenId": 2,
+        "stationId": 2,
+        "spielId": 9,
+        "state": "idle",
+        "rating": "unknown",
+        "timestampStart": null,
+        "timestampEnd": null
+    },
+    {
+        "stationDatenId": 3,
+        "stationId": 3,
+        "spielId": 9,
+        "state": "idle",
+        "rating": "unknown",
+        "timestampStart": null,
+        "timestampEnd": null
+    }
+]
+```
+NOTE: Please look at ./ICD_Bomb_Defusal_Parkour.md for more details.
+
+### `POST /dashboard/backend/start`
+Creates a new team and game object in the database and makes all incoming status updates from stations be associated with the new game.
+
+Post Example:
+```json
+{
+    "team_name": "My Cool Team",
+    "member_count": 6
+}
+```
+| Field | Type | Meaning |
+|---|---|---|
+| `team_name` | string | The name of the team which is playing now |
+| `member_count` | int | The amout of players in this team |
+
+
+### `POST /dashboard/backend/stop`
+Stops the current game and stores the outcome / reason why it was stopped in the database.
+
+Post Example:
+```json
+{
+    "outcome": "exploded"
+}
+```
+| Field | Type | Meaning |
+|---|---|---|
+| `outcome` | string | `"defused"` \| `"exploded"` |
