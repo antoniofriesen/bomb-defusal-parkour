@@ -7,7 +7,7 @@ Version: v1 – Draft – 2026-09-23
 Two backend services, each documented in its own section below:
 
 - **Scoreboard Backend** (Python/FastAPI, `scoreboard/backend/`) - implemented and tested. Reads game/station data, builds rankings, serves the scoreboard page.
-- **Dashboard Backend** (C#/.NET, `dashboard/backend/`) - owns the database and the MQTT connection. The Scoreboard Backend depends on two endpoints from it (Section 2) that don't exist yet.
+- **Dashboard Backend** (C#/.NET, `dashboard/backend/`) - owns the database and the MQTT connection. The Scoreboard Backend depends on two endpoints from it (Section 2).
 
 ```
 Stations --MQTT (ICD)--> Dashboard Backend --owns--> Database
@@ -89,14 +89,16 @@ Response `404`: `game_id` doesn't exist or isn't a `defused` game.
 
 ## 2. Internal API needed from the Dashboard Backend
 
-**⚠️ NOT IMPLEMENTED YET - owned by the Dashboard Team.** The Scoreboard Backend currently runs against fake data (`repositories/fake_repository.py`, `repositories/fake_station_events_repository.py`) until these two endpoints exist. See `dashboard/backend/README.md` for the same contract with setup instructions.
+**✅ Implemented by the Dashboard Team.** The Scoreboard Backend can run against fake data (`repositories/fake_repository.py`, `repositories/fake_station_events_repository.py`) or against these real endpoints, controlled by `SCOREBOARD_USE_FAKE_DATA`.
 
-Both endpoints: return **everything**, unfiltered and unsorted - the Scoreboard Backend does all filtering/sorting/ranking itself. Keep this as simple as possible on your side.
+Both endpoints: return **everything**, unfiltered and unsorted - the Scoreboard Backend does all filtering/sorting/ranking itself.
+
+**Field naming: camelCase**, not snake_case (differs from Section 1/3 below). This is ASP.NET Core's default JSON serialization for the Dashboard Backend's C# models - kept as-is rather than requiring extra configuration on that side. The Scoreboard Backend's Pydantic models accept both spellings (`alias_generator`), so this only affects what you see on the wire, not the Python field names used elsewhere in the codebase.
 
 | Method | Path | Status |
 |---|---|---|
-| `GET` | `/internal/games` | ❌ TODO (Dashboard Team) |
-| `GET` | `/internal/station-events` | ❌ TODO (Dashboard Team) |
+| `GET` | `/internal/games` | ✅ Implemented |
+| `GET` | `/internal/station-events` | ✅ Implemented |
 
 ### `GET /internal/games`
 One entry per game (every attempt, by every team, regardless of outcome).
@@ -104,45 +106,45 @@ One entry per game (every attempt, by every team, regardless of outcome).
 ```json
 [
   {
-    "game_id": 3,
-    "team_name": "Alpha Team",
+    "gameId": 3,
+    "teamName": "Alpha Team",
     "outcome": "defused",
-    "started_at": "2026-09-22T09:00:00",
-    "ended_at": "2026-09-22T09:22:05"
+    "startedAt": "2026-09-22T09:00:00",
+    "endedAt": "2026-09-22T09:22:05"
   }
 ]
 ```
 | Field | Type | Meaning |
 |---|---|---|
-| `game_id` | int | unique per attempt - the same team can play more than once |
-| `team_name` | string | as entered at game start |
+| `gameId` | int | unique per attempt - the same team can play more than once |
+| `teamName` | string | as entered at game start |
 | `outcome` | `"running"` \| `"defused"` \| `"exploded"` | |
-| `started_at` | string (ISO 8601) | |
-| `ended_at` | string (ISO 8601) or `null` | `null` while `running` |
+| `startedAt` | string (ISO 8601) | |
+| `endedAt` | string (ISO 8601) or `null` | `null` while `running` |
 
 ### `GET /internal/station-events`
-One entry per station event ever recorded (mirrors the ICD `status` payload, plus `team_name` and `game_id`).
+One entry per station event ever recorded (mirrors the ICD `status` payload, plus `teamName` and `gameId`).
 
 ```json
 [
   {
-    "game_id": 3,
-    "team_name": "Alpha Team",
-    "station_id": 1,
+    "gameId": 3,
+    "teamName": "Alpha Team",
+    "stationId": 1,
     "state": "solved",
-    "timestamp_start": "2026-09-22T09:00:00",
-    "timestamp_end": "2026-09-22T09:03:10"
+    "timestampStart": "2026-09-22T09:00:00",
+    "timestampEnd": "2026-09-22T09:03:10"
   }
 ]
 ```
 | Field | Type | Meaning |
 |---|---|---|
-| `game_id` | int | which attempt this event belongs to (same value as in `/internal/games`) |
-| `team_name` | string | |
-| `station_id` | int | |
+| `gameId` | int | which attempt this event belongs to (same value as in `/internal/games`) |
+| `teamName` | string | |
+| `stationId` | int | |
 | `state` | `"idle"` \| `"active"` \| `"solved"` | same values as the ICD |
-| `timestamp_start` | string (ISO 8601) or `null` | |
-| `timestamp_end` | string (ISO 8601) or `null` | |
+| `timestampStart` | string (ISO 8601) or `null` | |
+| `timestampEnd` | string (ISO 8601) or `null` | |
 
 ---
 

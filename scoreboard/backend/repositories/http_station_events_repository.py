@@ -3,10 +3,10 @@ http_station_events_repository.py
 ==================================
 Fetches station events from the dashboard backend
 (GET /internal/station-events), see the contract in
-dashboard/backend/README.md.
+docs/API_endpoints.md.
 
-UNTESTED against the real endpoint - it doesn't exist on the
-colleague's side yet, same situation as http_repository.py.
+Same situation as http_repository.py - camelCase on the wire,
+handled via the alias_generator on StationEvent in models.py.
 """
 
 from __future__ import annotations

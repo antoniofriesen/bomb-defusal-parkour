@@ -21,15 +21,17 @@ def test_fake_repository_returns_station_event_objects():
 
 @patch("repositories.http_station_events_repository.requests.get")
 def test_http_repository_parses_response_into_station_events(mock_get):
+    # camelCase, matching the real dashboard backend's ASP.NET Core default
+    # JSON serialization - not the snake_case used elsewhere in this codebase.
     mock_response = Mock()
     mock_response.json.return_value = [
         {
-            "game_id": 1,
-            "team_name": "Alpha Team",
-            "station_id": 1,
+            "gameId": 1,
+            "teamName": "Alpha Team",
+            "stationId": 1,
             "state": "solved",
-            "timestamp_start": "2026-09-21T10:00:00",
-            "timestamp_end": "2026-09-21T10:03:12",
+            "timestampStart": "2026-09-21T10:00:00",
+            "timestampEnd": "2026-09-21T10:03:12",
         }
     ]
     mock_get.return_value = mock_response
