@@ -23,7 +23,7 @@ COPY --from=build /app/publish .
 
 # Default configuration
 ENV ASPNETCORE_URLS=http://0.0.0.0:5175
-ENV MQTT_BROKER_HOST=mosquitto
+ENV MQTT_BROKER_HOST=192.168.50.1
 ENV MQTT_BROKER_PORT=1883
 ENV DATABASE_CONNECTION_STRING="Data Source=/app/data/Backend.db"
 
