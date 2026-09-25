@@ -9,6 +9,17 @@ Cyber-physischer Rätselparkour (LF07, Klasse BGH): Mehrere Gruppen lösen Stati
 - [`docs/network_diagram.md`](./docs/network_diagram.md): Netzwerk-Aufbau.
 - [`docs/dashboard_mockup.html`](./docs/dashboard_mockup.html): Mockup des Dashboards.
 
+## MQTT-Broker Verbindung
+
+WLAN: `Group - Stadt` (Passwort: `Group-Stadt`)
+
+| Parameter | Wert |
+|---|---|
+| `BROKER_HOST` | `172.17.0.1` |
+| `BROKER_PORT` | `1883` |
+| `USERNAME` | `pi_user` |
+| `PASSWORD` | `group-1` |
+
 ## `icd_interface.py` benutzen
 
 Die Datei baut Topic-Strings und Payloads exakt nach dem ICD und prüft die Werte. Sie hat **keine Abhängigkeiten** (nur Python-Standardbibliothek) und verbindet sich **nicht** selbst mit dem Broker. Die MQTT-Verbindung (`paho-mqtt`: connect, subscribe, publish) schreibt jede Zelle selbst.
