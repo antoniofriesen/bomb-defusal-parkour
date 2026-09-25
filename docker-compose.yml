@@ -1,0 +1,84 @@
+services:
+  # ============================================================================
+  # 1. Dashboard Backend (C# .NET 10 Web API)
+  # ============================================================================
+  dashboard-backend:
+    build:
+      context: ./dashboard/backend
+      dockerfile: Dockerfile
+    image: ghcr.io/${IMAGE_PREFIX:-antoniofriesen}/bomb-defusal-dashboard-backend:${IMAGE_TAG:-latest}
+    container_name: bomb-defusal-dashboard-backend
+    restart: unless-stopped
+    ports:
+      - "${DASHBOARD_BACKEND_PORT:-5175}:5175"
+    environment:
+      - MQTT_BROKER_HOST=${MQTT_BROKER_HOST:-172.17.0.1}
+      - MQTT_BROKER_PORT=${MQTT_BROKER_PORT:-1883}
+      - ASPNETCORE_URLS=http://0.0.0.0:5175
+      - DATABASE_CONNECTION_STRING=Data Source=/app/data/Backend.db
+    volumes:
+      - dashboard-data:/app/data
+    networks:
+      - parkour-network
+
+  # ============================================================================
+  # 2. Dashboard Frontend (Vue 3 / Vite + Nginx)
+  # ============================================================================
+  dashboard-frontend:
+    build:
+      context: ./dashboard/frontend
+      dockerfile: Dockerfile
+    image: ghcr.io/${IMAGE_PREFIX:-antoniofriesen}/bomb-defusal-dashboard-frontend:${IMAGE_TAG:-latest}
+    container_name: bomb-defusal-dashboard-frontend
+    restart: unless-stopped
+    ports:
+      - "${DASHBOARD_FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - dashboard-backend
+    networks:
+      - parkour-network
+
+  # ============================================================================
+  # 3. Scoreboard Backend (Python FastAPI)
+  # ============================================================================
+  scoreboard-backend:
+    build:
+      context: ./scoreboard/backend
+      dockerfile: Dockerfile
+    image: ghcr.io/${IMAGE_PREFIX:-antoniofriesen}/bomb-defusal-scoreboard-backend:${IMAGE_TAG:-latest}
+    container_name: bomb-defusal-scoreboard-backend
+    restart: unless-stopped
+    ports:
+      - "${SCOREBOARD_BACKEND_PORT:-8001}:8001"
+    environment:
+      - DASHBOARD_BACKEND_URL=http://dashboard-backend:5175
+      - SCOREBOARD_USE_FAKE_DATA=false
+    depends_on:
+      - dashboard-backend
+    networks:
+      - parkour-network
+
+  # ============================================================================
+  # 4. Scoreboard Frontend (Nginx static + reverse proxy)
+  # ============================================================================
+  scoreboard-frontend:
+    build:
+      context: ./scoreboard/frontend
+      dockerfile: Dockerfile
+    image: ghcr.io/${IMAGE_PREFIX:-antoniofriesen}/bomb-defusal-scoreboard-frontend:${IMAGE_TAG:-latest}
+    container_name: bomb-defusal-scoreboard-frontend
+    restart: unless-stopped
+    ports:
+      - "${SCOREBOARD_FRONTEND_PORT:-8002}:80"
+    depends_on:
+      - scoreboard-backend
+    networks:
+      - parkour-network
+
+networks:
+  parkour-network:
+    name: bomb-defusal-network
+    driver: bridge
+
+volumes:
+  dashboard-data:
