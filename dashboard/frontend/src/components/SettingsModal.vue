@@ -99,7 +99,7 @@ const handleResetAll = async () => {
           <input 
             v-model="localBackendUrl" 
             type="text" 
-            placeholder="http://localhost:8000/api"
+            placeholder="http://localhost:5175"
             :disabled="isMockMode"
             class="setting-input font-mono"
           />
@@ -161,10 +161,9 @@ const handleResetAll = async () => {
         <div class="icd-box">
           <span class="icd-title">Backend REST-Endpunkte:</span>
           <div class="icd-items">
-            <code>POST /api/game/start</code>
-            <code>POST /api/game/stop</code>
-            <code>GET  /api/game/status</code>
-            <code>POST /api/game/check-code</code>
+            <code>POST /dashboard/backend/start</code>
+            <code>POST /dashboard/backend/stop</code>
+            <code>GET  /dashboard/backend/status</code>
           </div>
         </div>
 

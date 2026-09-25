@@ -12,6 +12,16 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: true
+    host: true,
+    proxy: {
+      '/dashboard/backend': {
+        target: 'http://localhost:5175',
+        changeOrigin: true
+      },
+      '/internal': {
+        target: 'http://localhost:5175',
+        changeOrigin: true
+      }
+    }
   }
 })
