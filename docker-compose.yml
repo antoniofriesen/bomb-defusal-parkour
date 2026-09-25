@@ -1,0 +1,128 @@
+services:
+  # ============================================================================
+  # 1. Central MQTT Broker (Mosquitto)
+  # ============================================================================
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: bomb-defusal-mosquitto
+    restart: unless-stopped
+    ports:
+      - "${MOSQUITTO_PORT:-1883}:1883"
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    networks:
+      - parkour-network
+
+  # ============================================================================
+  # 2. Dashboard Backend (C# .NET 10 Web API)
+  # ============================================================================
+  dashboard-backend:
+    build:
+      context: ./dashboard/backend
+      dockerfile: Dockerfile
+    image: ghcr.io/${IMAGE_PREFIX:-antoniofriesen}/bomb-defusal-dashboard-backend:${IMAGE_TAG:-latest}
+    container_name: bomb-defusal-dashboard-backend
+    restart: unless-stopped
+    ports:
+      - "${DASHBOARD_BACKEND_PORT:-5175}:5175"
+    environment:
+      - MQTT_BROKER_HOST=mosquitto
+      - MQTT_BROKER_PORT=1883
+      - ASPNETCORE_URLS=http://0.0.0.0:5175
+      - DATABASE_CONNECTION_STRING=Data Source=/app/data/Backend.db
+    volumes:
+      - dashboard-data:/app/data
+    depends_on:
+      - mosquitto
+    networks:
+      - parkour-network
+
+  # ============================================================================
+  # 3. Dashboard Frontend (Vue 3 / Vite + Nginx)
+  # ============================================================================
+  dashboard-frontend:
+    build:
+      context: ./dashboard/frontend
+      dockerfile: Dockerfile
+    image: ghcr.io/${IMAGE_PREFIX:-antoniofriesen}/bomb-defusal-dashboard-frontend:${IMAGE_TAG:-latest}
+    container_name: bomb-defusal-dashboard-frontend
+    restart: unless-stopped
+    ports:
+      - "${DASHBOARD_FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - dashboard-backend
+    networks:
+      - parkour-network
+
+  # ============================================================================
+  # 4. Scoreboard Backend (Python FastAPI)
+  # ============================================================================
+  scoreboard-backend:
+    build:
+      context: ./scoreboard/backend
+      dockerfile: Dockerfile
+    image: ghcr.io/${IMAGE_PREFIX:-antoniofriesen}/bomb-defusal-scoreboard-backend:${IMAGE_TAG:-latest}
+    container_name: bomb-defusal-scoreboard-backend
+    restart: unless-stopped
+    ports:
+      - "${SCOREBOARD_BACKEND_PORT:-8001}:8001"
+    environment:
+      - DASHBOARD_BACKEND_URL=http://dashboard-backend:5175
+      - SCOREBOARD_USE_FAKE_DATA=false
+    depends_on:
+      - dashboard-backend
+    networks:
+      - parkour-network
+
+  # ============================================================================
+  # 5. Scoreboard Frontend (Nginx static + reverse proxy)
+  # ============================================================================
+  scoreboard-frontend:
+    build:
+      context: ./scoreboard/frontend
+      dockerfile: Dockerfile
+    image: ghcr.io/${IMAGE_PREFIX:-antoniofriesen}/bomb-defusal-scoreboard-frontend:${IMAGE_TAG:-latest}
+    container_name: bomb-defusal-scoreboard-frontend
+    restart: unless-stopped
+    ports:
+      - "${SCOREBOARD_FRONTEND_PORT:-8002}:80"
+    depends_on:
+      - scoreboard-backend
+    networks:
+      - parkour-network
+
+  # ============================================================================
+  # 6. Station / Module Test Simulator (Optional Tool)
+  # Run via: docker compose run --rm module-test
+  # ============================================================================
+  module-test:
+    build:
+      context: ./module_test
+      dockerfile: Dockerfile
+    image: ghcr.io/${IMAGE_PREFIX:-antoniofriesen}/bomb-defusal-module-test:${IMAGE_TAG:-latest}
+    container_name: bomb-defusal-module-test
+    profiles:
+      - tools
+    stdin_open: true
+    tty: true
+    environment:
+      - BROKER_HOST=mosquitto
+      - BROKER_PORT=1883
+      - BROKER_USERNAME=pi_user
+      - BROKER_PASSWORD=group-1
+    depends_on:
+      - mosquitto
+    networks:
+      - parkour-network
+
+networks:
+  parkour-network:
+    name: bomb-defusal-network
+    driver: bridge
+
+volumes:
+  mosquitto-data:
+  mosquitto-log:
+  dashboard-data:
