@@ -24,7 +24,6 @@ obj/
 bin/
 *.http
 *.db-*
-Migrations/
 
 
 # Node / Dashboard frontend

@@ -14,9 +14,9 @@ public class GameController() : ControllerBase
     }
 
     [HttpPost("dashboard/backend/stop")]
-    public ActionResult StopGame([FromBody] string outcome)
+    public ActionResult StopGame([FromBody] StopGameRequest request)
     {
-        Logic.GameControllerLogic.StopGame(outcome);
+        Logic.GameControllerLogic.StopGame(request.outcome);
         return Ok();
     }
 
@@ -34,3 +34,4 @@ public class GameController() : ControllerBase
 }
 
 public record StartGameRequest(string team_name, int member_count);
+public record StopGameRequest(string outcome);
