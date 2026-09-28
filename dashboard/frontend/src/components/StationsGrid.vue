@@ -1,18 +1,7 @@
 <script setup>
-import { computed } from 'vue'
 import { useGameSession } from '../composables/useGameSession.js'
 
 const { stations } = useGameSession()
-
-const computeDuration = (startStr, endStr) => {
-  if (!startStr) return '-'
-  const start = new Date(startStr).getTime()
-  const end = endStr ? new Date(endStr).getTime() : Date.now()
-  const diffSec = Math.max(0, Math.round((end - start) / 1000))
-  const mm = String(Math.floor(diffSec / 60)).padStart(2, '0')
-  const ss = String(diffSec % 60).padStart(2, '0')
-  return `${mm}:${ss}`
-}
 </script>
 
 <template>
@@ -20,7 +9,6 @@ const computeDuration = (startStr, endStr) => {
     <div class="card-header">
       <div class="header-left">
         <h3 class="header-title">Stationen (Status)</h3>
-        <span class="header-sub">REST-Synchronisation</span>
       </div>
       <div class="badge-solved">
         Gelöst: {{ stations.filter(s => s.state === 'solved').length }} / 6
@@ -57,11 +45,6 @@ const computeDuration = (startStr, endStr) => {
               <span v-if="st.rating" class="dot rating-dot" :class="st.rating"></span>
               <span>{{ st.rating || '-' }}</span>
             </div>
-          </div>
-
-          <div class="detail-row">
-            <span class="detail-label">Dauer</span>
-            <span class="font-mono text-muted">{{ computeDuration(st.timestamp_start, st.timestamp_end) }}</span>
           </div>
         </div>
       </div>
@@ -106,7 +89,7 @@ const computeDuration = (startStr, endStr) => {
 .card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border-subtle);
@@ -117,11 +100,6 @@ const computeDuration = (startStr, endStr) => {
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.01em;
-}
-
-.header-sub {
-  font-size: 0.74rem;
-  color: var(--text-muted);
 }
 
 .badge-solved {
