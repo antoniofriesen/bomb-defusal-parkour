@@ -90,7 +90,7 @@ public static class GameControllerLogic
             using (var con = new DatabaseContext())
             {
                 Spiel currentGame = con.Games.OrderByDescending(g => g.SpielId).First();
-                Console.WriteLine("Current game: " + currentGame.SpielId);
+                //Console.WriteLine("Current game: " + currentGame.SpielId);
                 List<StationDaten> relevantData = new List<StationDaten>();
 
                 for (int i = 1; i <= 6; i++)
@@ -100,8 +100,8 @@ public static class GameControllerLogic
                     {
                         relevantData.Add(con.GameData.OrderByDescending(d => d.StationDatenId).First(d => d.SpielId == currentGame.SpielId && d.StationId == i));
                     }
-                    else
-                        Console.WriteLine($"No data for d.SpielId == {currentGame.SpielId} && d.StationId == {i}!");
+                    //else
+                        //Console.WriteLine($"No data for d.SpielId == {currentGame.SpielId} && d.StationId == {i}!");
                 }
 
                 List<StationDatenReadModel> models = new List<StationDatenReadModel>();
