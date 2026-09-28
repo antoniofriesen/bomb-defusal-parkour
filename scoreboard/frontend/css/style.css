@@ -113,11 +113,13 @@ body {
   border-color: var(--accent);
 }
 
-/* Two-column layout, used by both tabs */
+/* Stacked layout, used by both tabs - big block on top, station cards
+   below at full width. Little horizontal room to work with, plenty of
+   vertical room, so side-by-side columns aren't a good fit here. */
 
 .board-columns {
-  display: grid;
-  grid-template-columns: minmax(220px, 32%) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 24px;
 }
 
@@ -125,10 +127,8 @@ body {
   display: none;
 }
 
-@media (max-width: 700px) {
-  .board-columns {
-    grid-template-columns: 1fr;
-  }
+.board-right {
+  margin-top: 8px;
 }
 
 .panel-title-row {
