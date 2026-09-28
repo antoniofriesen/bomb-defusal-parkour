@@ -5,7 +5,8 @@ Cyber-physischer Rätselparkour (LF07, Klasse BGH): Mehrere Gruppen lösen Stati
 ## Dokumentation
 
 - [`docs/ICD_Bomb_Defusal_Parkour.md`](./docs/ICD_Bomb_Defusal_Parkour.md): **Interface Control Document.** Verbindlich für alle Zellen (Topics, Payload-Format).
-- [`docs/sequence_diagram_mqtt.md`](./docs/sequence_diagram_mqtt.md): Nachrichtenfluss zwischen Dashboard, Broker und Station.
+- [`docs/sequence_diagram_mqtt.md`](./docs/sequence_diagram_mqtt.md): Nachrichtenfluss zwischen Dashboard, Broker und Station (Sequenzdiagramm).
+- [`docs/activity_diagram_mqtt.md`](./docs/activity_diagram_mqtt.md): Aktivitäten und Kontrollfluss zwischen Dashboard, Broker und Stationen (Aktivitätsdiagramm).
 - [`docs/network_diagram.md`](./docs/network_diagram.md): Netzwerk-Aufbau.
 - [`docs/dashboard_mockup.html`](./docs/dashboard_mockup.html): Mockup des Dashboards.
 
